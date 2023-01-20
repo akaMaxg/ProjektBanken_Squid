@@ -12,8 +12,6 @@
             Functions.LogIn(mockUser1.name, mockUser1.pincode);
         }
     }
-
-
     //Klass för användare
     public class User
     {
@@ -50,7 +48,7 @@
             string inputUserName = Console.ReadLine();
             Console.WriteLine("Enter pincode: ");
             int inputPinCode = int.Parse(Console.ReadLine());
-
+            
             if (inputUserName == logInName && inputPinCode == logInPin)
             {
                 Console.WriteLine("Välkommen");
