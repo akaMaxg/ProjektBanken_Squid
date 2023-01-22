@@ -1,15 +1,18 @@
-﻿namespace ProjektBankenSquid2
+﻿using System.Collections.Generic;
+using System.Data.SQLite;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace ProjektBankenSquid2
 {
     internal class Program
     {
         static void Main(string[] args)
         {
+            //.....Change the pathfile in the database clase to your local db folder......
             Console.WriteLine("Welcome to Squid-bank");
-            //User newUser = Functions.CreateUser();
-            User mockUser1 = new User("Frank", 1111);
-            User mockUser2 = new User("Berit", 2222);
-            Console.WriteLine("Current users: " + mockUser1.name + " and " + mockUser2.name );
-            Functions.LogIn(mockUser1.name, mockUser1.pincode);
+            //Functions.LogIn();
+            Functions.MockLogIn();
+
         }
     }
 }
