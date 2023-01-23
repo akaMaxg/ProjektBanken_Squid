@@ -11,7 +11,7 @@ namespace ProjektBankenSquid2
     {
         public static void AddUsers() //Ta två argument, string och int för username och pin
         {
-            string connectionString = "Data Source=F:\\Min enhet\\Personligt\\Skolrelaterat\\Chas Academy, Fullstack C#\\egetKodaHär\\selfProjects\\ProjektBankenSquid2\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
+            string connectionString = @"Data Source=..\..\..\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
@@ -24,7 +24,7 @@ namespace ProjektBankenSquid2
         }
         public static List<string> GetUsers() //Hämtar och lägger alla användare in en lista
         {
-            string connectionString = "Data Source=F:\\Min enhet\\Personligt\\Skolrelaterat\\Chas Academy, Fullstack C#\\egetKodaHär\\selfProjects\\ProjektBankenSquid2\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
+            string connectionString = @"Data Source=..\..\..\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
 
             List<string> users = new List<string>();
             List<int> pins = new List<int>();
