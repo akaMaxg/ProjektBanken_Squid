@@ -11,7 +11,7 @@ namespace ProjektBankenSquid2
             //.....Change the pathfile in the database clase to your local db folder......
             Console.WriteLine("Welcome to Squid-bank");
             //Functions.LogIn();
-            Functions.MockLogIn();
+            Functions.LogIn();
 
         }
     }
