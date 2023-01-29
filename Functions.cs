@@ -2,6 +2,7 @@
 {
     public class Functions
     {
+        
         //Funktion för att skapa användare
 
 

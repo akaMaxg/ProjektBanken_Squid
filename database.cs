@@ -14,7 +14,7 @@ using static System.Data.Entity.Infrastructure.Design.Executor;
 namespace ProjektBankenSquid2
 {
 
-    public class database
+    public class Database
     {
         private static string LoadConnectionString(string id = "Default")
         {
@@ -58,7 +58,8 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<User>($"SELECT *, bank_role.is_admin, bank_role.is_client FROM bank_user, bank_role WHERE first_name = '{firstName}' AND pin_code = '{pinCode}' AND bank_user.role_id = bank_role.id", new DynamicParameters());
+                var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters());
+                output.ToList();
                 //Console.WriteLine(output);
                 return output.ToList();
             }
@@ -67,6 +68,7 @@ namespace ProjektBankenSquid2
             // Returnerar en lista av Users
         }
 
+        //Transfers money between own accounts
         public static void Transfer(int accountTransfer, int accountReciever, int transferAmount)
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
@@ -74,7 +76,7 @@ namespace ProjektBankenSquid2
                 var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{transferAmount}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = balance + '{transferAmount}' WHERE bank_account.id = '{accountReciever}'", new DynamicParameters());
             }
         }
-
+        //Lists all user accounts based of id
         public static List<Account> UserAccount(int id)
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
@@ -85,15 +87,24 @@ namespace ProjektBankenSquid2
                 return output.ToList();
             }
         }
-
-        public static  List<Account> UserAccount(int id)
+        //Returns the information of someone with a specific account number. 
+        public static List<Account> ForeignAccount(int accountNumber)
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id ={id}" , new DynamicParameters());
+                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE account_number = '{accountNumber}'", new DynamicParameters());
                 //Console.WriteLine(output);
                 return output.ToList();
+            }
+        }
+
+        //Transfer funds, but to an account that is not logged in 
+        public static void ExternalTransfer(int accountTransfer, int accountReciever, int transferAmount)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{transferAmount}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = balance + '{transferAmount}' WHERE bank_account.account_number = '{accountReciever}'", new DynamicParameters());
             }
         }
     }
