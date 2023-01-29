@@ -1,54 +1,68 @@
-﻿using System;
+﻿using Dapper;
+using Npgsql;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Data.Entity.Infrastructure.Design.Executor;
 
 namespace ProjektBankenSquid2
 {
+
     public class database
     {
-        public static void AddUsers() //Ta två argument, string och int för username och pin
+        private static string LoadConnectionString(string id = "Default")
         {
-            string connectionString = @"Data Source=..\..\..\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            return ConfigurationManager.ConnectionStrings[id].ConnectionString;
+        }
+        public static void SaveBankUser(User user)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand(connection))
-                {
-                    command.CommandText = "INSERT INTO users(userName, pincode) VALUES('User1', 1111);"; //Eventuellt ändra User1 och 1111 till användarens input
-                    command.ExecuteNonQuery();
-                }
+                cnn.Execute("insert into bank_user (first_name, last_name, pin_code) values (@first_name, @last_name, @pin_code)", user);
+
             }
         }
-        public static List<string> GetUsers() //Hämtar och lägger alla användare in en lista
+
+        public static List<User> LoadBankUsers()
         {
-            string connectionString = @"Data Source=..\..\..\\dbsquid.db"; //Set to your local db folder. //Varför behöver vi a connection string i funktionen och inte i 'public class'?
-
-            List<string> users = new List<string>();
-            List<int> pins = new List<int>();
-
-
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM users", connection))
-                {
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string userName = reader["userName"].ToString();
-                            int pincode = Convert.ToInt32(reader["pincode"]);
-                            users.Add(userName); //alla users
-                            pins.Add(pincode); //alla pins????
 
-                        }
-                    }
-                }
+                var output = cnn.Query<User>("SELECT * FROM bank_user WHERE role_id = 1", new DynamicParameters());
+                //Console.WriteLine(output);
+                return output.ToList();
             }
-            return users;
+            // Kopplar upp mot DB:n
+            // läser ut alla Users
+            // Returnerar en lista av Users
+        }
+
+        public static List<User> CheckLogin(string firstName, string pinCode)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<User>($"SELECT bank_user.*, bank_role.is_admin, bank_role.is_client FROM bank_user, bank_role WHERE first_name = '{firstName}' AND pin_code = '{pinCode}' AND bank_user.role_id = bank_role.id", new DynamicParameters());
+                //Console.WriteLine(output);
+                return output.ToList();
+            }
+            // Kopplar upp mot DB:n
+            // läser ut alla Users
+            // Returnerar en lista av Users
+        }
+
+        public static void Transfer(int accountTransfer, int accountReciever, int fromBalance, int toBalance)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                var output = cnn.Query<User>($"UPDATE bank_account SET balance = '{fromBalance}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = '{toBalance}' WHERE bank_account.id = '{accountReciever}'", new DynamicParameters());
+            }
         }
     }
 }
