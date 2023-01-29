@@ -85,5 +85,16 @@ namespace ProjektBankenSquid2
                 return output.ToList();
             }
         }
+
+        public static  List<Account> UserAccount(int id)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id ={id}" , new DynamicParameters());
+                //Console.WriteLine(output);
+                return output.ToList();
+            }
+        }
     }
 }
