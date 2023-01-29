@@ -7,6 +7,7 @@ namespace ProjektBankenSquid2
 {
     public class Account
         {
+            public int account_number { get; set; }
             public int id { get; set; }
             public string name { get; set; }
             public float interest_rate { get; set; }
