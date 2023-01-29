@@ -34,7 +34,7 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<User>("SELECT * FROM bank_user WHERE role_id = 1", new DynamicParameters());
+                var output = cnn.Query<User>("SELECT * FROM bank_user", new DynamicParameters());
                 //Console.WriteLine(output);
                 return output.ToList();
             }
@@ -43,12 +43,22 @@ namespace ProjektBankenSquid2
             // Returnerar en lista av Users
         }
 
+        public static List<User> LoadBankAccounts()
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<User>("SELECT * FROM bank_account", new DynamicParameters());
+                //Console.WriteLine(output);
+                return output.ToList();
+            }
+        }
         public static List<User> CheckLogin(string firstName, string pinCode)
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<User>($"SELECT bank_user.*, bank_role.is_admin, bank_role.is_client FROM bank_user, bank_role WHERE first_name = '{firstName}' AND pin_code = '{pinCode}' AND bank_user.role_id = bank_role.id", new DynamicParameters());
+                var output = cnn.Query<User>($"SELECT *, bank_role.is_admin, bank_role.is_client FROM bank_user, bank_role WHERE first_name = '{firstName}' AND pin_code = '{pinCode}' AND bank_user.role_id = bank_role.id", new DynamicParameters());
                 //Console.WriteLine(output);
                 return output.ToList();
             }
@@ -57,11 +67,22 @@ namespace ProjektBankenSquid2
             // Returnerar en lista av Users
         }
 
-        public static void Transfer(int accountTransfer, int accountReciever, int fromBalance, int toBalance)
+        public static void Transfer(int accountTransfer, int accountReciever, int transferAmount)
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                var output = cnn.Query<User>($"UPDATE bank_account SET balance = '{fromBalance}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = '{toBalance}' WHERE bank_account.id = '{accountReciever}'", new DynamicParameters());
+                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{transferAmount}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = balance + '{transferAmount}' WHERE bank_account.id = '{accountReciever}'", new DynamicParameters());
+            }
+        }
+
+        public static List<Account> UserAccount(int id)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id = '{id}'", new DynamicParameters());
+                //Console.WriteLine(output);
+                return output.ToList();
             }
         }
     }
