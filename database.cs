@@ -107,5 +107,15 @@ namespace ProjektBankenSquid2
                 var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{transferAmount}' WHERE bank_account.id = '{accountTransfer}'; UPDATE bank_account SET balance = balance + '{transferAmount}' WHERE bank_account.account_number = '{accountReciever}'", new DynamicParameters());
             }
         }
+
+        //Loan functionality
+        public static void Loan(int receiverAccount, decimal loanAmount)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
+                    $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
+            }
+        }
     }
 }
