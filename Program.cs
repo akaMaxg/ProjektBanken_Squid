@@ -1,4 +1,6 @@
-﻿namespace ProjektBankenSquid2
+﻿using Internal;
+
+namespace ProjektBankenSquid2
 {
     internal class Program
     {
@@ -89,6 +91,22 @@
             //Console.WriteLine("User added");
             //Functions.LogIn();
             //Functions.LogIn();
+
+            //Loan funstionality
+
+            Console.WriteLine("How much money would you like to loan?");
+            decimal loanAmount = decimal.Parse(Console.ReadLine());
+            decimal interestRate = 0,0570;   
+            decimal interest = interestRate * loanAmount;
+            Console.ReadLine($"The interest rate for this loan is {interest}");
+            Console.WriteLine("Please enter receiver account");
+            int receiverAccount = int.Parse(Console.ReadLine());
+            //calls the list accounts function on row 29 above to list accounts and
+            //let user pic one, this will be receiverAccount sent to Loan function
+            Database.Loan(receiverAccount, loanAmount);
+            Console.WriteLine($"You have successfully loaned {loanAmount}");
+
+
 
         }
     }
