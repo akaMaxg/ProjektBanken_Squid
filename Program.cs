@@ -23,12 +23,27 @@
 
             List<Account> accounts = Database.UserAccount(activeUser[0].id);
 
+
             int counter = 1;
             foreach (var item in accounts) //Lists accounts and balances with numbers
             {
                 Console.WriteLine($"{counter}. {item.name}, {item.balance}");
                 counter++;
             }
+
+            var NewAccount = new Account();
+            Console.WriteLine("Select account"); 
+            NewAccount.name = Console.ReadLine();
+            Console.WriteLine("Select interest rate");
+            NewAccount.interest_rate = decimal.Parse(Console.ReadLine());
+            NewAccount.user_id = activeUser[0].id;
+            Console.WriteLine("Select currency id");
+            NewAccount.currency_id = int.Parse(Console.ReadLine());
+            Console.WriteLine("Select balance");
+            NewAccount.balance = decimal.Parse(Console.ReadLine());
+            Console.WriteLine("Select account number");
+            NewAccount.account_number = int.Parse(Console.ReadLine());
+            Database.CreateAccount(NewAccount);
 
             //Function to transfer balance internally
             Console.Write("Type the account you want to transfer from: "); //From
