@@ -54,19 +54,44 @@ namespace ProjektBankenSquid2
                 return output.ToList();
             }
         }
-        public static List<User> CheckLogin(string firstName, string pinCode)
+        public static List<User> CheckLogin()
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
+                Console.Write("Enter name: ");
+                string firstName = Console.ReadLine();
+                Console.Write("Enter pincode: ");
+                string pinCode = Console.ReadLine();
 
-                var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters());
-                output.ToList();
-                //Console.WriteLine(output);
-                return output.ToList();
+
+                var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()).ToList();
+                var outputTwo = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}'", new DynamicParameters()).ToList(); //Sets user for wrong code increment
+                if (outputTwo[0].login_attempt <= 3) //If a user with matchning name exists, check so attempts <=3
+                {
+                    if (output.Any()) //if output returns anything, a match on both name and pin - continue
+                    {
+                        Console.WriteLine($"Log in successfull, welcome {output[0].first_name} {output[0].last_name}");
+                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()); //resets log in counter
+                        return output;
+                    }
+                    else
+                    {
+                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = login_attempt + '1' WHERE first_name = '{firstName}'", new DynamicParameters()); //increments login counter for user
+                        Console.WriteLine($"Login failed, incorrect name or pincode. Try again. \r\nFailed attempt(s): {outputTwo[0].login_attempt + 1}, account will be locked after 3 failed attempts."); //Information
+                        CheckLogin(); //Prompts the user to log in again
+                        return null;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Your account is locked due to too many failed login attempts. Only system administrator can unlock it"); //If user has failed too many times, will be locked until login_attempts maunally resets to 0
+                    return null;
+                }
             }
+
             // Kopplar upp mot DB:n
-            // läser ut alla Users
-            // Returnerar en lista av Users
+            // läser ut en användare med specifikt namn och pinkod
+            // Returnerar en lista med en träff
         }
 
         //Transfers money between own accounts

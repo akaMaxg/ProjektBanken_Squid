@@ -1,4 +1,4 @@
-﻿using Internal;
+﻿using System.Configuration.Internal;
 
 namespace ProjektBankenSquid2
 {
@@ -15,14 +15,9 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"Hello {user.first_name} your last name is {user.pin_code}");
             }
 
-            Console.Write("Enter name: ");
-            string firstName = Console.ReadLine();
-            Console.Write("Enter pincode: ");
-            string pinCode = Console.ReadLine();
 
-            List<User> activeUser = Database.CheckLogin(firstName, pinCode);
-            Console.WriteLine($"Log in successfull, welcome {activeUser[0].first_name} {activeUser[0].last_name}");
-
+            List<User> activeUser = Database.CheckLogin();
+            Console.ReadLine();
             List<Account> accounts = Database.UserAccount(activeUser[0].id);
 
 
@@ -109,17 +104,21 @@ namespace ProjektBankenSquid2
 
             //Loan funstionality
 
-            Console.WriteLine("How much money would you like to loan?");
-            decimal loanAmount = decimal.Parse(Console.ReadLine());
-            decimal interestRate = 0,0570;
-            decimal interest = interestRate * loanAmount;
-            Console.ReadLine($"The interest rate for this loan is {interest}");
-            Console.WriteLine("Please enter receiver account");
-            int receiverAccount = int.Parse(Console.ReadLine());
-            //calls the list accounts function on row 29 above to list accounts and
-            //let user pic one, this will be receiverAccount sent to Loan function
-            Database.Loan(receiverAccount, loanAmount);
-            Console.WriteLine($"You have successfully loaned {loanAmount}");
+
+
+            //----Denna kod ger mig fel (Max)-----
+
+            //Console.WriteLine("How much money would you like to loan?");
+            //decimal loanAmount = decimal.Parse(Console.ReadLine());
+            //decimal interestRate = 0.0570;
+            //decimal interest = interestRate * loanAmount;
+            //Console.WriteLine($"The interest rate for this loan is {interest}");
+            //Console.WriteLine("Please enter receiver account");
+            //int receiverAccount = int.Parse(Console.ReadLine());
+            ////calls the list accounts function on row 29 above to list accounts and
+            ////let user pic one, this will be receiverAccount sent to Loan function
+            //Database.Loan(receiverAccount, loanAmount);
+            //Console.WriteLine($"You have successfully loaned {loanAmount}");
 
         }
     }
