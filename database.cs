@@ -24,6 +24,7 @@ namespace ProjektBankenSquid2
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
+               
                 cnn.Execute("insert into bank_user (first_name, last_name, pin_code) values (@first_name, @last_name, @pin_code)", user);
 
             }
@@ -108,6 +109,7 @@ namespace ProjektBankenSquid2
             }
         }
 
+
         //Loan functionality
         public static void Loan(int receiverAccount, decimal loanAmount)
         {
@@ -115,6 +117,19 @@ namespace ProjektBankenSquid2
             {
                 var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
                     $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
+            }
+        }
+        
+        //Create a new account
+
+        public static void CreateAccount(Account account)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
+
+
             }
         }
     }
