@@ -15,5 +15,4 @@ namespace ProjektBankenSquid2
         public int currency_id { get; set; }
         public decimal balance { get; set; }
     }
-    
 }
