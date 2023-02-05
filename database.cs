@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Newtonsoft.Json;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -183,8 +184,18 @@ namespace ProjektBankenSquid2
             int amount = int.Parse(Console.ReadLine());
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
-                Console.WriteLine("Successful transfer");
+                var from = cnn.Query<User>($"IF bank_account.currency_id = 2 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = '2' ELSE IF bank_account.currency_id = 3 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 3 ELSE IF bank_account.currency_id = 4 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 4 ELSE SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 1", new DynamicParameters());
+                var to = cnn.Query<User>($"IF bank_account.currency_id = 2 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = '2' ELSE IF bank_account.currency_id = 3 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 3 ELSE IF bank_account.currency_id = 4 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 4 ELSE SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 1", new DynamicParameters()); ;
+
+                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}";
+                using (var webClient = new System.Net.WebClient())
+                {
+                    var json = webClient.DownloadString(URLString);
+                    API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
+
+                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}; UPDATE bank_account SET balance = balance + '{rate.conversion_result}' WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
+
+                }
             }
         }
 
