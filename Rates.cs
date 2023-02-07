@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Data.Entity.Infrastructure.Design.Executor;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjektBankenSquid2
 {
@@ -21,6 +22,8 @@ namespace ProjektBankenSquid2
         {
             return ConfigurationManager.ConnectionStrings[id].ConnectionString;
         }
+
+        //function that updates the exchanges rates in datebase
         public static bool ImportRates()
         {
             try
@@ -46,26 +49,7 @@ namespace ProjektBankenSquid2
         }
         
     }
-    class RatesConvert
-    {
-        public static bool ImportConvert(string from, string to, int amount )
-        {
-            try
-            {
-                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}";
-                using (var webClient = new System.Net.WebClient())
-                {
-                    var json = webClient.DownloadString(URLString);
-                    API_Obj_Convert Test = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-    }
+   
     public class API_Obj
     {
         public string result { get; set; }
@@ -89,8 +73,9 @@ namespace ProjektBankenSquid2
         public string time_next_update_utc { get; set; }
         public string base_code { get; set; }
         public string target_code { get; set; }
-        public ConversionRate conversion_rate { get; set; }
         public double conversion_result { get; set; }
+        public double conversion_rate { get; set; }
+        
     }
 
     public class ConversionRate

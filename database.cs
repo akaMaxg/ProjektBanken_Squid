@@ -8,10 +8,12 @@ using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Data.Entity.Infrastructure.Design.Executor;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjektBankenSquid2
 {
@@ -147,17 +149,33 @@ namespace ProjektBankenSquid2
             int choiceFrom = int.Parse(Console.ReadLine());
             int idOne = 0;
             int idTwo = 0;
-
+            int idOneCurrency = 0;
+            int idTwoCurrency = 0;
             switch (choiceFrom)
             {
                 case 1:
                     idOne = activeAccounts[0].id;
+                    idOneCurrency = activeAccounts[0].currency_id;
                     break;
                 case 2:
                     idOne = activeAccounts[1].id;
+                    idOneCurrency = activeAccounts[1].currency_id;
                     break;
                 case 3:
                     idOne = activeAccounts[2].id;
+                    idOneCurrency = activeAccounts[2].currency_id;
+                    break;
+                case 4:
+                    idOne = activeAccounts[3].id;
+                    idOneCurrency = activeAccounts[3].currency_id;
+                    break;
+                case 5:
+                    idOne = activeAccounts[4].id;
+                    idOneCurrency = activeAccounts[4].currency_id;
+                    break;
+                case 6:
+                    idOne = activeAccounts[5].id;
+                    idOneCurrency = activeAccounts[5].currency_id;
                     break;
                 default:
                     break;
@@ -168,33 +186,84 @@ namespace ProjektBankenSquid2
             {
                 case 1:
                     idTwo = activeAccounts[0].id;
+                    idTwoCurrency = activeAccounts[0].currency_id;
                     break;
                 case 2:
                     idTwo = activeAccounts[1].id;
+                    idOneCurrency = activeAccounts[1].currency_id;
                     break;
                 case 3:
-                    idOne = activeAccounts[2].id;
+                    idTwo = activeAccounts[2].id;
+                    idTwoCurrency = activeAccounts[2].currency_id;
+                    break;
+                case 4:
+                    idTwo = activeAccounts[3].id;
+                    idTwoCurrency = activeAccounts[3].currency_id;
+                    break;
+                case 5:
+                    idTwo = activeAccounts[4].id;
+                    idTwoCurrency = activeAccounts[4].currency_id;
+                    break;
+                case 6:
+                    idTwo = activeAccounts[5].id;
+                    idTwoCurrency = activeAccounts[5].currency_id;
                     break;
                 default:
                     break;
             }
-
-
-            Console.WriteLine("How much money do you want to transfer? ");
-            int amount = int.Parse(Console.ReadLine());
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            string to = "";
+            string from = "";
+            //switches to put right currency in the API string 
+            switch (idOneCurrency)
             {
-                var from = cnn.Query<User>($"IF bank_account.currency_id = 2 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = '2' ELSE IF bank_account.currency_id = 3 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 3 ELSE IF bank_account.currency_id = 4 WHERE bank_account.id = '{idOne}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 4 ELSE SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 1", new DynamicParameters());
-                var to = cnn.Query<User>($"IF bank_account.currency_id = 2 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = '2' ELSE IF bank_account.currency_id = 3 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 3 ELSE IF bank_account.currency_id = 4 WHERE bank_account.id = '{idTwo}' SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 4 ELSE SELECT bank_currency.name FROM bank_curreny WHERE bank_currency.id = 1", new DynamicParameters()); ;
+                case 1:
+                    from = "SEK";
+                    break;
+                case 2:
+                    from = "USD";
+                    break;
+                case 3:
+                    from = "EUR";
+                    break;
+                case 4:
+                    from = "GBP";
+                    break;
+                default:
+                    break;
+            }
+            switch (idTwoCurrency)
+            {
+                case 1:
+                    to = "SEK";
+                    break;
+                case 2:
+                    to = "USD";
+                    break;
+                case 3:
+                    to = "EUR";
+                    break;
+                case 4:
+                    to = "GBP";
+                    break;
+                default:
+                    break;
+            }
+            Console.WriteLine("How much money do you want to transfer? ");
+            double amount = double.Parse(Console.ReadLine());
 
-                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}";
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+            {
+
+                
+                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                Console.WriteLine(URLString);
                 using (var webClient = new System.Net.WebClient())
                 {
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-
-                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}; UPDATE bank_account SET balance = balance + '{rate.conversion_result}' WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
-
+                    double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
+                    
                 }
             }
         }
