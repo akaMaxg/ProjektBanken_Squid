@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Internal;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -223,30 +224,62 @@ namespace ProjektBankenSquid2
             }
         }
 
-        //Loan functionality
-        public static void Loan(List<Account> recieverAccount)
-        {
-            Console.WriteLine("How much money would you like to loan?");
-            double loanAmount = double.Parse(Console.ReadLine());
-            double interestRate = 0.0570;
-            double interest = interestRate * loanAmount;
-            Console.WriteLine($"The interest rate for this loan is {interest}");
-            Console.WriteLine("Please enter receiver account");
-            ListUserAccounts(recieverAccount);
-            int receiverAccount = int.Parse(Console.ReadLine());
-            ////calls the list accounts function on row 29 above to list accounts and
-            ////let user pic one, this will be receiverAccount sent to Loan function
 
+        //Checks if user is allowed to take a loan based on total savings in bank and returns a bool
+
+        public static bool SetLoanPermission(List<Account> activeAccount, decimal loanAmount)
+        {
+            bool loanPermission;
+            decimal loanAmount *= 5;
+            var output;
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
-                    $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
+                output = cnn.Query<Account>("SELECT SUM(balance) FROM bank_account", new DynamicParameters());
             }
-            Console.WriteLine($"You have successfully loaned {loanAmount}");
+           if (output < loanAmount +1)
+            {
+                loanPermission = false;
+            }
+            else
+            {
+                loanPermission = true;
+            }
+            return loanPermission;
         }
 
-        //Create a new account
-        public static void CreateAccount(List<User> user)
+        //Makes the actual loan transfer of requested amount to requested account
+
+        public static void Loan(List<Account> activeAccount)
+        {
+            Console.WriteLine("The allowed amount for a loan is five times the amount of your" +
+                "total savings in this bank");
+            Console.WriteLine("How much money would you like to loan?");
+            decimal loanAmount = int.Parse(Console.ReadLine());
+            bool loanPermission = SetLoanPermission(activeAccount, loanAmount);
+            if (loanPermission)
+            {
+                double interest = 0.0570 * loanAmount;
+                Console.WriteLine($"The interest rate for the requested loan is {interest}");
+                ListUserAccounts(activeAccount);  
+                Console.WriteLine("Please enter preferred receiver account");
+                int receiverAccount = int.Parse(Console.ReadLine());   
+                using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+                {
+                        var output = cnn.Query<Account>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
+                            $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
+                }
+                Console.WriteLine($"You have successfully loaned {loanAmount}");
+            }
+            else
+            {
+                Console.ReadLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of" +
+                    "your savings fail to reach the required threshold");
+            }
+        }
+
+
+            //Create a new account
+            public static void CreateAccount(List<User> user)
         {
             var NewAccount = new Account();
             Console.WriteLine("Select account");

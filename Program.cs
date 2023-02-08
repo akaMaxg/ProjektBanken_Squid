@@ -20,7 +20,7 @@ namespace ProjektBankenSquid2
             //User newUser = new User("Frank", "Sinatra", "1111");
             //database.SaveBankUser(newUser);
             //Console.WriteLine("User added");
-            //Functions.LogIn();
+            //Functions.LogIn(); 
         }
     }
 }
