@@ -22,19 +22,16 @@ namespace ProjektBankenSquid2
             return ConfigurationManager.ConnectionStrings[id].ConnectionString;
         }
 
-        public static List<User> RunProgram()
+        public static void RunProgram()
         {
             Console.WriteLine("Welcome to Squid-bank");
             List<User> users = Database.LoadBankUsers();
-
             foreach (User user in users)
             {
                 Console.WriteLine($"Hello {user.first_name} your last name is {user.pin_code}");
             }
-
             List<User> activeUser = Database.CheckLogin();
-
-            return activeUser;
+            Functions.Menu(activeUser);
         }
 
         public static List<User> CheckLogin()
@@ -122,7 +119,6 @@ namespace ProjektBankenSquid2
             {
 
                 var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id = '{user[0].id}'", new DynamicParameters()).ToList();
-                ListUserAccounts(output);
                 return output;
             }
         }
