@@ -7,20 +7,12 @@ namespace ProjektBankenSquid2
     {
         static void Main(string[] args)
         {
-
-            List<User> activeUser = Database.RunProgram();
-            List<Account> activeAccount = Database.UserAccount(activeUser);
-
-
-            Database.Loan(activeAccount);
-            Database.Transfer(activeAccount);
-            Database.ExternalTransfer(activeAccount);
-            Database.UserAccount(activeUser);
+            Database.RunProgram();
 
             //User newUser = new User("Frank", "Sinatra", "1111");
             //database.SaveBankUser(newUser);
             //Console.WriteLine("User added");
-            //Functions.LogIn();
+            //Functions.LogIn(); 
         }
     }
 }

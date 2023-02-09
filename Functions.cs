@@ -2,13 +2,99 @@
 {
     public class Functions
     {
-        
-        //Funktion för att skapa användare
 
+        public static void Menu(List<User> activeUser)
+        {
+            List<Account> activeAccount = Database.UserAccount(activeUser);
+            int selectedOption = 0;
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("Bank Menu");
 
-        //Funktion för inlogg
-        //Funktion för att säkerställa att rätt typ av input ges int/string**
+                for (int i = 0; i < 5; i++)
+                {
+                    if (i == selectedOption)
+                    {
+                        Console.WriteLine("→ " + GetOptionString(i));
+                    }
+                    else
+                    {
+                        Console.WriteLine("  " + GetOptionString(i));
+                    }
+                }
 
+                Console.WriteLine("\b\nSelect an option:");
+                Console.WriteLine("\b\nUse arrow keys to navigate and 'Enter' to select");
+
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+                switch (keyInfo.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        if (selectedOption > 0)
+                        {
+                            selectedOption--;
+                        }
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if (selectedOption < 4)
+                        {
+                            selectedOption++;
+                        }
+                        break;
+                    case ConsoleKey.Enter:
+                        switch (selectedOption)
+                        {
+                            case 0:
+                                Console.WriteLine("See accounts and balance selected");
+                                Database.ListUserAccounts(activeAccount);
+                                Console.ReadLine();
+                                break;
+                            case 1:
+                                Console.WriteLine("Transfer between own accounts selected");
+                                Database.Transfer(activeAccount);
+                                Console.ReadLine();
+
+                                break;
+                            case 2:
+                                Console.WriteLine("Transfer to other account selected");
+                                Database.ExternalTransfer(activeAccount);
+                                Console.ReadLine();
+
+                                break;
+                            case 3:
+                                Console.WriteLine("Loan money selected");
+                                Database.Loan(activeAccount);
+                                Console.ReadLine();
+
+                                break;
+                            case 4:
+                                Console.WriteLine("Log out the bank selected");
+                                return;
+                        }
+                        break;
+                }
+            }
+        }
+        static string GetOptionString(int option)
+        {
+            switch (option)
+            {
+                case 0:
+                    return "See accounts and balance";
+                case 1:
+                    return "Transfer between own accounts";
+                case 2:
+                    return "Transfer to other account";
+                case 3:
+                    return "Loan money";
+                case 4:
+                    return "Log out the bank";
+                default:
+                    return "";
+            }
+        }
         public static void MockLogIn() //
         {
             //User newUser = Functions.CreateUser();
@@ -30,6 +116,12 @@
             //}
         }
         //public static User CreateUser()
+
+        //Funktion för att skapa användare
+
+
+        //Funktion för inlogg
+        //Funktion för att säkerställa att rätt typ av input ges int/string**
         //{
         //    Console.Write("Enter name of new user: ");
         //    string inputName = Console.ReadLine();
@@ -40,6 +132,3 @@
         //}
     }
 }
-
-
-
