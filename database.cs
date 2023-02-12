@@ -38,6 +38,8 @@ namespace ProjektBankenSquid2
 
         public static List<User> CheckLogin()
         {
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 Console.Write("Enter name: ");
@@ -128,6 +130,8 @@ namespace ProjektBankenSquid2
 
         public static void ListUserAccounts(List<Account> accounts)
         {
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
             int counter = 1;
             foreach (var item in accounts) //Lists accounts and balances with numbers
             {
@@ -139,73 +143,38 @@ namespace ProjektBankenSquid2
         //Transfers money between own accounts
         public static void Transfer(List<Account> activeAccounts)
         {
-            
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
             Console.Write("Type the account you want to transfer from: "); //From
-            int choiceFrom = int.Parse(Console.ReadLine());
-            int idOne = 0;
-            int idTwo = 0;
-            int idOneCurrency = 0;
-            int idTwoCurrency = 0;
-            switch (choiceFrom)
+            int choiceFrom = int.Parse(Console.ReadLine()) -1;
+            if (choiceFrom + 1 <= 0)
             {
-                case 1:
-                    idOne = activeAccounts[0].id;
-                    idOneCurrency = activeAccounts[0].currency_id;
-                    break;
-                case 2:
-                    idOne = activeAccounts[1].id;
-                    idOneCurrency = activeAccounts[1].currency_id;
-                    break;
-                case 3:
-                    idOne = activeAccounts[2].id;
-                    idOneCurrency = activeAccounts[2].currency_id;
-                    break;
-                case 4:
-                    idOne = activeAccounts[3].id;
-                    idOneCurrency = activeAccounts[3].currency_id;
-                    break;
-                case 5:
-                    idOne = activeAccounts[4].id;
-                    idOneCurrency = activeAccounts[4].currency_id;
-                    break;
-                case 6:
-                    idOne = activeAccounts[5].id;
-                    idOneCurrency = activeAccounts[5].currency_id;
-                    break;
-                default:
-                    break;
+                Console.WriteLine("Invalid account number");
+                RunProgram();
             }
+            else if (choiceFrom + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            int idOne = activeAccounts[choiceFrom].id;
+            int idOneCurrency = activeAccounts[choiceFrom].currency_id;
+
             Console.Write("Type the account you want to transfer to: "); //To
-            int choiceTo = int.Parse(Console.ReadLine());
-            switch (choiceTo)
+            int choiceTo = int.Parse(Console.ReadLine()) - 1;
+            if (choiceTo + 1 < 0)
             {
-                case 1:
-                    idTwo = activeAccounts[0].id;
-                    idTwoCurrency = activeAccounts[0].currency_id;
-                    break;
-                case 2:
-                    idTwo = activeAccounts[1].id;
-                    idOneCurrency = activeAccounts[1].currency_id;
-                    break;
-                case 3:
-                    idTwo = activeAccounts[2].id;
-                    idTwoCurrency = activeAccounts[2].currency_id;
-                    break;
-                case 4:
-                    idTwo = activeAccounts[3].id;
-                    idTwoCurrency = activeAccounts[3].currency_id;
-                    break;
-                case 5:
-                    idTwo = activeAccounts[4].id;
-                    idTwoCurrency = activeAccounts[4].currency_id;
-                    break;
-                case 6:
-                    idTwo = activeAccounts[5].id;
-                    idTwoCurrency = activeAccounts[5].currency_id;
-                    break;
-                default:
-                    break;
+                Console.WriteLine("Invalid account number");
+                RunProgram();
             }
+            else if (choiceTo + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            int idTwo = activeAccounts[choiceTo].id;
+            int idTwoCurrency = activeAccounts[choiceTo].currency_id;
+            
             string to = "";
             string from = "";
             //switches to put right currency in the API string 
@@ -249,42 +218,104 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
             {
 
-
                 String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
-                Console.WriteLine(URLString);
                 using (var webClient = new System.Net.WebClient())
                 {
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                     double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                     var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
-
+                    Console.WriteLine("Transfered successfully.");
                 }
             }
         }
 
         //Transfer funds, but to an account that is not logged in 
-        public static void ExternalTransfer(List<Account> account)
+        public static void ExternalTransfer(List<Account> activeAccounts)
         {
-
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+           
+            Console.Write("Type the account you want to transfer from: "); //From
+            int choiceFrom = int.Parse(Console.ReadLine()) - 1;
+            if (choiceFrom + 1 <= 0)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            else if (choiceFrom + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            int idOne = activeAccounts[choiceFrom].id;
+            int idOneCurrency = activeAccounts[choiceFrom].currency_id;
+            
             Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
             int reciever = int.Parse(Console.ReadLine());
+            
+            
 
-
-            Console.Write("Enter amount"); //Test to transfer to external user with known account_number - uses the same account as previous
+            Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
             int amount = int.Parse(Console.ReadLine());
 
 
             List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
-            int accountReciever = accountX[0].account_number; //Sets reciever to the new account
+            int idTwo = accountX[0].account_number; //Sets reciever to the new account
             Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
-
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            int idTwoCurrency = accountX[0].currency_id;
+            
+            string to = "";
+            string from = "";
+            //switches to put right currency in the API string 
+            switch (idOneCurrency)
             {
-                var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{account[0].id}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{accountReciever}'", new DynamicParameters());
-                Console.WriteLine($"Successfully transfered {amount} from {account[0].id} to {accountReciever}");
-
+                case 1:
+                    from = "SEK";
+                    break;
+                case 2:
+                    from = "USD";
+                    break;
+                case 3:
+                    from = "EUR";
+                    break;
+                case 4:
+                    from = "GBP";
+                    break;
+                default:
+                    break;
             }
+            switch (idTwoCurrency)
+            {
+                case 1:
+                    to = "SEK";
+                    break;
+                case 2:
+                    to = "USD";
+                    break;
+                case 3:
+                    to = "EUR";
+                    break;
+                case 4:
+                    to = "GBP";
+                    break;
+                default:
+                    break;
+            }
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+            {
+
+                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                using (var webClient = new System.Net.WebClient())
+                {
+                    var json = webClient.DownloadString(URLString);
+                    API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
+                    double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTwo}'", new DynamicParameters());
+                    Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTwo}");
+                }
+            }
+            
         }
 
         public static List<Account> ForeignAccount(int accountNumber)
@@ -301,14 +332,15 @@ namespace ProjektBankenSquid2
 
         //Checks if user is allowed to take a loan based on total savings in bank and returns a bool
 
-        public static bool SetLoanPermission(List<Account> activeAccount, double loanAmount)
+        public static bool SetLoanPermission(List<Account> activeAccount,double loanAmount)
         {
+            
             bool loanPermission;
             loanAmount *= 5;
             
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                var output = Convert.ToDouble(cnn.Query<Account>("SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
+                var output = Convert.ToDouble(cnn.Query<Account>($"SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
                 
                 if (output < loanAmount + 1)
                 {
@@ -327,10 +359,12 @@ namespace ProjektBankenSquid2
 
         public static void Loan(List<Account> activeAccount)
         {
-            Console.WriteLine("The allowed amount for a loan is five times the amount of your" +
-                "total savings in this bank");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine("The allowed amount for a loan is five times the amount of your total savings in this bank");
+            Console.WriteLine();
             Console.WriteLine("How much money would you like to loan?");
-            double loanAmount = int.Parse(Console.ReadLine());
+            double loanAmount = double.Parse(Console.ReadLine());
             bool loanPermission = SetLoanPermission(activeAccount, loanAmount);
             if (loanPermission)
             {

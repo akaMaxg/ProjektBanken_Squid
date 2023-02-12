@@ -53,6 +53,7 @@
                                 break;
                             case 1:
                                 Console.WriteLine("Transfer between own accounts selected");
+                                Database.ListUserAccounts(activeAccount);
                                 Database.Transfer(activeAccount);
                                 Console.ReadLine();
 
