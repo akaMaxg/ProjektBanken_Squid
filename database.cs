@@ -413,66 +413,61 @@ namespace ProjektBankenSquid2
         //}
 
 
-            //Create a new account
-            public static void CreateAccount(List<User> user)
-            
+         //Create account
+        public static void CreateAccount(List<User> users)
         {
-            var NewAccount = new Account();
-            Console.WriteLine("Select account");
-            NewAccount.name = Console.ReadLine();
-            Console.WriteLine("Select interest rate");
-            NewAccount.interest_rate = decimal.Parse(Console.ReadLine());
-            NewAccount.user_id = user[0].id;
-            Console.WriteLine("Select currency id");
-            NewAccount.currency_id = int.Parse(Console.ReadLine());
-            Console.WriteLine("Select balance");
-            NewAccount.balance = decimal.Parse(Console.ReadLine());
-            Console.WriteLine("Select account number");
-            NewAccount.account_number = int.Parse(Console.ReadLine());
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            var account = new Account();
+            Console.WriteLine("Choose account\n1.Salary account, 2.Savings account");
+            string chooseaccount = Console.ReadLine();
+            if (chooseaccount == "1")
             {
-                cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", NewAccount);
+                account.name = "Salary";
+                account.interest_rate = 0;
+            }
+            else if(chooseaccount == "2")
+            {
+                account.name = "Savings";
+                account.interest_rate = 2.5m;
             }
 
+            account.user_id = users[0].id;
 
+            Console.WriteLine("Select currency\n1.SEK, 2.USD, 3.EUR, 4.GBP");
+            string selectcurrency = Console.ReadLine();
+            if (selectcurrency == "1")
+            {
+                account.currency_id = 1;
+            }
+            else if(selectcurrency == "2")
+            {
+                account.currency_id = 2;
+            }
+            else if(selectcurrency == "3")
+            {
+                account.currency_id = 3;
             }
 
-        public static List<Transaction> UserTransactions(List<Account> accounts)
-        {
+            else if(selectcurrency == "4")
+            {
+                account.currency_id = 4;
+            }
+
+            Console.WriteLine("How much you want to deposit?");
+            account.balance = decimal.Parse(Console.ReadLine());
+
+            Console.WriteLine("Select a number for the account");
+            account.account_number = int.Parse(Console.ReadLine());
+
+
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-
-                var output = cnn.Query<Transaction>($"SELECT * FROM bank_transaction WHERE from_account_id='{accounts[0].id}' OR to_account_id='{accounts[0].id}'", new DynamicParameters()).ToList();
-
-                foreach (var item in output)
-                {
-                    Console.WriteLine($"Name: {item.name}\nFrom account id:{item.from_account_id}\nTo account id: {item.to_account_id}\n" +
-                        $"Amount: {item.amount}\nTime {item.transaction_time}");
-                }
-
-                return output;
+                cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
             }
         }
 
-        public static void CreateSavingsAccount(List<User> users)
-        {
+      
 
-            var SavingsAccount = new Account();
-            SavingsAccount.name = "Savings";
-            SavingsAccount.interest_rate = 0.020m;
-            SavingsAccount.user_id = users[0].id;
-            SavingsAccount.currency_id = 1;
-            Console.WriteLine("Select balance");
-            SavingsAccount.balance = decimal.Parse(Console.ReadLine());
-            Console.WriteLine("Select account number");
-            SavingsAccount.account_number = int.Parse(Console.ReadLine());
-
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-            {
-                cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", SavingsAccount);
-            }
-
-        }
+       
 
     }
 }
