@@ -85,8 +85,6 @@ namespace ProjektBankenSquid2
        
         public double GBP { get; set; }
        
-        public double NOK { get; set; }
-       
         public double SEK { get; set; }
       
         public double USD { get; set; }
