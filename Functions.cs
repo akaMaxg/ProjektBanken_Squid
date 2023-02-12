@@ -12,7 +12,7 @@
                 Console.Clear();
                 Console.WriteLine("Bank Menu");
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 6; i++)
                 {
                     if (i == selectedOption)
                     {
@@ -38,7 +38,7 @@
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (selectedOption < 4)
+                        if (selectedOption < 5)
                         {
                             selectedOption++;
                         }
@@ -71,6 +71,10 @@
 
                                 break;
                             case 4:
+                                Console.WriteLine("Create account selected");
+                                Database.CreateAccount(activeUser);
+                                break;
+                            case 5:
                                 Console.WriteLine("Log out the bank selected");
                                 return;
                         }
@@ -91,6 +95,8 @@
                 case 3:
                     return "Loan money";
                 case 4:
+                    return "Create account";
+                case 5:
                     return "Log out the bank";
                 default:
                     return "";
