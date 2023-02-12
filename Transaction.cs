@@ -10,6 +10,7 @@ namespace ProjektBankenSquid2
     {
         public int id { get; set; }
         public string name { get; set; }
+        public int user_id { get; set; }
         public int from_account_id { get; set; }
         public int to_account_id { get; set; }
         public decimal amount { get; set; }

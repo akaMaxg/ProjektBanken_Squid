@@ -390,13 +390,12 @@ namespace ProjektBankenSquid2
 
             //Create a new account
             public static void CreateAccount(List<User> user)
-            
-        {
+            {
+
             var NewAccount = new Account();
             Console.WriteLine("Select account");
             NewAccount.name = Console.ReadLine();
-            Console.WriteLine("Select interest rate");
-            NewAccount.interest_rate = decimal.Parse(Console.ReadLine());
+            NewAccount.interest_rate = 0;
             NewAccount.user_id = user[0].id;
             Console.WriteLine("Select currency id");
             NewAccount.currency_id = int.Parse(Console.ReadLine());
@@ -409,32 +408,15 @@ namespace ProjektBankenSquid2
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", NewAccount);
             }
 
-
+              Console.WriteLine("Account created!\nPress enter");
             }
-
-        public static List<Transaction> UserTransactions(List<Account> accounts)
-        {
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-            {
-
-                var output = cnn.Query<Transaction>($"SELECT * FROM bank_transaction WHERE from_account_id='{accounts[0].id}' OR to_account_id='{accounts[0].id}'", new DynamicParameters()).ToList();
-
-                foreach (var item in output)
-                {
-                    Console.WriteLine($"Name: {item.name}\nFrom account id:{item.from_account_id}\nTo account id: {item.to_account_id}\n" +
-                        $"Amount: {item.amount}\nTime {item.transaction_time}");
-                }
-
-                return output;
-            }
-        }
 
         public static void CreateSavingsAccount(List<User> users)
         {
 
             var SavingsAccount = new Account();
             SavingsAccount.name = "Savings";
-            SavingsAccount.interest_rate = 0.020m;
+            SavingsAccount.interest_rate = 2.0m;
             SavingsAccount.user_id = users[0].id;
             SavingsAccount.currency_id = 1;
             Console.WriteLine("Select balance");
@@ -447,7 +429,27 @@ namespace ProjektBankenSquid2
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", SavingsAccount);
             }
 
+            Console.WriteLine("Savings account created!\nPress enter");
         }
+
+        public static List<Transaction> Transactions(List<Account> accounts)
+        {
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<Transaction>($"SELECT * FROM bank_transaction WHERE user_id = '{accounts[0].user_id}'", new DynamicParameters()).ToList();
+
+                foreach (var item in output)
+                {
+                    Console.WriteLine($"Name: {item.name}\nFrom account: {item.from_account_id}\nTo account: {item.to_account_id}" +
+                        $"\nAmount: {item.amount}\nTime: {item.transaction_time}");
+                }
+
+                return output;
+            }
+        }
+
+       
 
     }
 }

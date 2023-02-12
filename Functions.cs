@@ -12,7 +12,7 @@
                 Console.Clear();
                 Console.WriteLine("Bank Menu");
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 7; i++)
                 {
                     if (i == selectedOption)
                     {
@@ -38,7 +38,7 @@
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (selectedOption < 4)
+                        if (selectedOption < 6)
                         {
                             selectedOption++;
                         }
@@ -71,6 +71,31 @@
 
                                 break;
                             case 4:
+                                Console.WriteLine("1. Create account\n2. Create savings account");
+                                string selectaccount = Console.ReadLine();
+                                if (selectaccount == "1")
+                                {
+                                    Console.WriteLine("Create account selected");
+                                    Database.CreateAccount(activeUser);
+                                    Console.ReadLine();
+                                    
+                                }
+                                else if(selectaccount == "2")
+                                {
+                                    Console.WriteLine("Create savings account selected");
+                                    Database.CreateSavingsAccount(activeUser);
+                                    Console.ReadLine();
+                                    
+                                }
+
+                                break;
+                            case 5:
+                                Console.WriteLine("See your transaction selected");
+                                Database.Transactions(activeAccount);
+                                Console.ReadLine();
+                                break;
+
+                            case 6:
                                 Console.WriteLine("Log out the bank selected");
                                 return;
                         }
@@ -91,6 +116,10 @@
                 case 3:
                     return "Loan money";
                 case 4:
+                    return "Create account";
+                case 5:
+                    return "See your transaction";
+                case 6:
                     return "Log out the bank";
                 default:
                     return "";
