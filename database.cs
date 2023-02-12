@@ -133,9 +133,27 @@ namespace ProjektBankenSquid2
             Console.WriteLine("---------------------------------------------");
             Console.WriteLine();
             int counter = 1;
+            string currency = "";
             foreach (var item in accounts) //Lists accounts and balances with numbers
             {
-                Console.WriteLine($"{counter}. {item.name}, {item.balance}");
+                switch (item.currency_id)
+                {
+                    case 1:
+                        currency = "SEK";
+                        break;
+                    case 2:
+                        currency = "USD";
+                        break;
+                    case 3:
+                        currency = "EUR";
+                        break;
+                    case 4:
+                        currency = "GBP";
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
                 counter++;
             }
         }
@@ -157,28 +175,11 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Invalid account number");
                 RunProgram();
             }
-            int idOne = activeAccounts[choiceFrom].id;
-            int idOneCurrency = activeAccounts[choiceFrom].currency_id;
-
-            Console.Write("Type the account you want to transfer to: "); //To
-            int choiceTo = int.Parse(Console.ReadLine()) - 1;
-            if (choiceTo + 1 < 0)
-            {
-                Console.WriteLine("Invalid account number");
-                RunProgram();
-            }
-            else if (choiceTo + 1 > activeAccounts.Count)
-            {
-                Console.WriteLine("Invalid account number");
-                RunProgram();
-            }
-            int idTwo = activeAccounts[choiceTo].id;
-            int idTwoCurrency = activeAccounts[choiceTo].currency_id;
-            
-            string to = "";
+            int idFrom = activeAccounts[choiceFrom].id;
+            int idFromCurrency = activeAccounts[choiceFrom].currency_id;
+            //switch to put right currency in the API string 
             string from = "";
-            //switches to put right currency in the API string 
-            switch (idOneCurrency)
+            switch (idFromCurrency)
             {
                 case 1:
                     from = "SEK";
@@ -195,7 +196,25 @@ namespace ProjektBankenSquid2
                 default:
                     break;
             }
-            switch (idTwoCurrency)
+
+
+            Console.Write("Type the account you want to transfer to: "); //To
+            int choiceTo = int.Parse(Console.ReadLine()) - 1;
+            if (choiceTo + 1 < 0)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            else if (choiceTo + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("Invalid account number");
+                RunProgram();
+            }
+            int idTo = activeAccounts[choiceTo].id;
+            int idToCurrency = activeAccounts[choiceTo].currency_id;
+            //switch to put right currency in the API string 
+            string to = "";
+            switch (idToCurrency)
             {
                 case 1:
                     to = "SEK";
@@ -212,6 +231,8 @@ namespace ProjektBankenSquid2
                 default:
                     break;
             }
+
+
             Console.WriteLine("How much money do you want to transfer? ");
             double amount = double.Parse(Console.ReadLine());
 
@@ -224,7 +245,7 @@ namespace ProjektBankenSquid2
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                     double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTwo}'", new DynamicParameters());
+                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
                     Console.WriteLine("Transfered successfully.");
                 }
             }
@@ -248,27 +269,15 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Invalid account number");
                 RunProgram();
             }
-            int idOne = activeAccounts[choiceFrom].id;
-            int idOneCurrency = activeAccounts[choiceFrom].currency_id;
-            
-            Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
-            int reciever = int.Parse(Console.ReadLine());
-            
-            
-
-            Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
-            int amount = int.Parse(Console.ReadLine());
 
 
-            List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
-            int idTwo = accountX[0].account_number; //Sets reciever to the new account
-            Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
-            int idTwoCurrency = accountX[0].currency_id;
-            
-            string to = "";
+            int idFrom = activeAccounts[choiceFrom].id;
+            int idFromCurrency = activeAccounts[choiceFrom].currency_id;
+
+
+            //switch to put right currency in the API string 
             string from = "";
-            //switches to put right currency in the API string 
-            switch (idOneCurrency)
+            switch (idFromCurrency)
             {
                 case 1:
                     from = "SEK";
@@ -285,7 +294,23 @@ namespace ProjektBankenSquid2
                 default:
                     break;
             }
-            switch (idTwoCurrency)
+            Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
+            int reciever = int.Parse(Console.ReadLine());
+            
+            
+            Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
+            int amount = int.Parse(Console.ReadLine());
+
+
+            List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
+            int idTo = accountX[0].account_number; //Sets reciever to the new account
+            Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
+            int idToCurrency = accountX[0].currency_id;
+
+
+            //switch to put right currency in the API string 
+            string to = "";
+            switch (idToCurrency)
             {
                 case 1:
                     to = "SEK";
@@ -311,8 +336,8 @@ namespace ProjektBankenSquid2
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                     double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idOne}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTwo}'", new DynamicParameters());
-                    Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTwo}");
+                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                    Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
                 }
             }
             
@@ -382,7 +407,7 @@ namespace ProjektBankenSquid2
             }
             else
             {
-                Console.WriteLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of" +
+                Console.WriteLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of " +
                     "your savings fail to reach the required threshold");
             }
         }
