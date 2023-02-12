@@ -234,7 +234,7 @@ namespace ProjektBankenSquid2
 
 
             Console.WriteLine("How much money do you want to transfer? ");
-            double amount = double.Parse(Console.ReadLine());
+            decimal amount = decimal.Parse(Console.ReadLine());
 
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
             {
@@ -244,7 +244,7 @@ namespace ProjektBankenSquid2
                 {
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                    double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                    decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                     var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
                     Console.WriteLine("Transfered successfully.");
                 }
@@ -335,7 +335,7 @@ namespace ProjektBankenSquid2
                 {
                     var json = webClient.DownloadString(URLString);
                     API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                    double transfer = Convert.ToDouble($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                    decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                     var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
                     Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
                 }
@@ -357,60 +357,60 @@ namespace ProjektBankenSquid2
 
         //Checks if user is allowed to take a loan based on total savings in bank and returns a bool
 
-        public static bool SetLoanPermission(List<Account> activeAccount,double loanAmount)
-        {
+        //public static bool SetLoanPermission(List<Account> activeAccount, decimal loanAmount)
+        //{
             
-            bool loanPermission;
-            loanAmount *= 5;
+        //    bool loanPermission;
+        //    loanAmount *= 5;
             
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-            {
-                var output = Convert.ToDouble(cnn.Query<Account>($"SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
+        //    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+        //    {
+        //        var output = Convert.ToDecimal(cnn.Query<Account>($"SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
                 
-                if (output < loanAmount + 1)
-                {
-                    loanPermission = false;
-                }
-                else
-                {
-                    loanPermission = true;
-                }
-                return loanPermission;
-            }
+        //        if (output < loanAmount + 1)
+        //        {
+        //            loanPermission = false;
+        //        }
+        //        else
+        //        {
+        //            loanPermission = true;
+        //        }
+        //        return loanPermission;
+        //    }
           
-        }
+        //}
 
         //Makes the actual loan transfer of requested amount to requested account
 
-        public static void Loan(List<Account> activeAccount)
-        {
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
-            Console.WriteLine("The allowed amount for a loan is five times the amount of your total savings in this bank");
-            Console.WriteLine();
-            Console.WriteLine("How much money would you like to loan?");
-            double loanAmount = double.Parse(Console.ReadLine());
-            bool loanPermission = SetLoanPermission(activeAccount, loanAmount);
-            if (loanPermission)
-            {
-                double interest = 0.0570 * loanAmount;
-                Console.WriteLine($"The interest rate for the requested loan is {interest}");
-                ListUserAccounts(activeAccount);  
-                Console.WriteLine("Please enter preferred receiver account");
-                int receiverAccount = int.Parse(Console.ReadLine());   
-                using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-                {
-                        var output = cnn.Query<Account>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
-                            $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
-                }
-                Console.WriteLine($"You have successfully loaned {loanAmount}");
-            }
-            else
-            {
-                Console.WriteLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of " +
-                    "your savings fail to reach the required threshold");
-            }
-        }
+        //public static void Loan(List<Account> activeAccount)
+        //{
+        //    Console.WriteLine("---------------------------------------------");
+        //    Console.WriteLine();
+        //    Console.WriteLine("The allowed amount for a loan is five times the amount of your total savings in this bank");
+        //    Console.WriteLine();
+        //    Console.WriteLine("How much money would you like to loan?");
+        //    decimal loanAmount = decimal.Parse(Console.ReadLine());
+        //    bool loanPermission = SetLoanPermission(activeAccount, loanAmount);
+        //    if (loanPermission)
+        //    {
+        //        decimal interest = 0.0570 * loanAmount;
+        //        Console.WriteLine($"The interest rate for the requested loan is {interest}");
+        //        ListUserAccounts(activeAccount);  
+        //        Console.WriteLine("Please enter preferred receiver account");
+        //        int receiverAccount = int.Parse(Console.ReadLine());   
+        //        using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+        //        {
+        //                var output = cnn.Query<Account>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
+        //                    $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
+        //        }
+        //        Console.WriteLine($"You have successfully loaned {loanAmount}");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of " +
+        //            "your savings fail to reach the required threshold");
+        //    }
+        //}
 
 
             //Create a new account
