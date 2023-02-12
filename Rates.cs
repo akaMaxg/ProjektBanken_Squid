@@ -73,21 +73,21 @@ namespace ProjektBankenSquid2
         public string time_next_update_utc { get; set; }
         public string base_code { get; set; }
         public string target_code { get; set; }
-        public double conversion_result { get; set; }
-        public double conversion_rate { get; set; }
+        public decimal conversion_result { get; set; }
+        public decimal conversion_rate { get; set; }
         
     }
 
     public class ConversionRate
     {
         
-        public double EUR { get; set; }
+        public decimal EUR { get; set; }
        
-        public double GBP { get; set; }
+        public decimal GBP { get; set; }
        
-        public double SEK { get; set; }
+        public decimal SEK { get; set; }
       
-        public double USD { get; set; }
+        public decimal USD { get; set; }
       
     }
 }

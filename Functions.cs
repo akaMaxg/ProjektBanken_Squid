@@ -66,7 +66,7 @@
                                 break;
                             case 3:
                                 Console.WriteLine("Loan money selected");
-                                Database.Loan(activeAccount);
+                                //Database.Loan(activeAccount);
                                 Console.ReadLine();
 
                                 break;
