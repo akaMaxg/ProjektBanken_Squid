@@ -202,13 +202,17 @@ namespace ProjektBankenSquid2
             int choiceTo = int.Parse(Console.ReadLine()) - 1;
             if (choiceTo + 1 < 0)
             {
-                Console.WriteLine("Invalid account number");
-                RunProgram();
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error! Invalid account number");
+                Console.WriteLine("---------------------------------------------");
+                Transfer(activeAccounts);
             }
             else if (choiceTo + 1 > activeAccounts.Count)
             {
-                Console.WriteLine("Invalid account number");
-                RunProgram();
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error! Invalid account number");
+                Console.WriteLine("---------------------------------------------");
+                Transfer(activeAccounts);
             }
             int idTo = activeAccounts[choiceTo].id;
             int idToCurrency = activeAccounts[choiceTo].currency_id;
@@ -234,21 +238,45 @@ namespace ProjektBankenSquid2
 
 
             Console.WriteLine("How much money do you want to transfer? ");
-            decimal amount = decimal.Parse(Console.ReadLine());
-
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+            string input = Console.ReadLine();
+            if (decimal.TryParse(input, out decimal amount))
             {
-
-                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
-                using (var webClient = new System.Net.WebClient())
+                if (amount > activeAccounts[choiceFrom].balance)
                 {
-                    var json = webClient.DownloadString(URLString);
-                    API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                    decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
-                    Console.WriteLine("Transfered successfully.");
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Insufficient funds.");
+                    Transfer(activeAccounts);
+                }
+                else if (amount <= 0)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Can't transfer negative amount.");
+                    Transfer(activeAccounts);
+                }
+                else
+                {
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    {
+
+                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                        using (var webClient = new System.Net.WebClient())
+                        {
+                            var json = webClient.DownloadString(URLString);
+                            API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
+                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                            var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
+                            Console.WriteLine("Transfered successfully.");
+                        }
+                    }
                 }
             }
+            else
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Input must be a number.");
+                Transfer(activeAccounts);
+            }
+            
         }
 
         //Transfer funds, but to an account that is not logged in 
@@ -294,52 +322,89 @@ namespace ProjektBankenSquid2
                 default:
                     break;
             }
+            
+            
             Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
             int reciever = int.Parse(Console.ReadLine());
-            
-            
-            Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
-            int amount = int.Parse(Console.ReadLine());
-
-
-            List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
-            int idTo = accountX[0].account_number; //Sets reciever to the new account
-            Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
-            int idToCurrency = accountX[0].currency_id;
-
-
-            //switch to put right currency in the API string 
-            string to = "";
-            switch (idToCurrency)
-            {
-                case 1:
-                    to = "SEK";
-                    break;
-                case 2:
-                    to = "USD";
-                    break;
-                case 3:
-                    to = "EUR";
-                    break;
-                case 4:
-                    to = "GBP";
-                    break;
-                default:
-                    break;
-            }
-            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+            bool accountNumberCheck = false;
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
-                using (var webClient = new System.Net.WebClient())
+                var output = cnn.Query<User>($"SELECT * FROM bank_account WHERE account_number = '{reciever}'", new DynamicParameters()).ToList();
+                
+                if (output.Count >= 1)
                 {
-                    var json = webClient.DownloadString(URLString);
-                    API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                    decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                    var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
-                    Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
+                    Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
+                    string input = Console.ReadLine();
+                    if (decimal.TryParse(input, out decimal amount))
+                    {
+                        if (amount > activeAccounts[choiceFrom].balance)
+                        {
+                            Console.WriteLine("---------------------------------------------");
+                            Console.WriteLine("Error: Insufficient funds.");
+                            ExternalTransfer(activeAccounts);
+                        }
+                        else if (amount <= 0)
+                        {
+                            Console.WriteLine("---------------------------------------------");
+                            Console.WriteLine("Error: Can't transfer negative amount.");
+                            ExternalTransfer(activeAccounts);
+                        }
+
+                        List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
+                        int idTo = accountX[0].account_number; //Sets reciever to the new account
+                        Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
+                        int idToCurrency = accountX[0].currency_id;
+
+
+                        //switch to put right currency in the API string 
+                        string to = "";
+                        switch (idToCurrency)
+                        {
+                            case 1:
+                                to = "SEK";
+                                break;
+                            case 2:
+                                to = "USD";
+                                break;
+                            case 3:
+                                to = "EUR";
+                                break;
+                            case 4:
+                                to = "GBP";
+                                break;
+                            default:
+                                break;
+                        }
+                        
+
+                            String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                            using (var webClient = new System.Net.WebClient())
+                            {
+                                var json = webClient.DownloadString(URLString);
+                                API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
+                                decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                                var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                                Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
+                            }
+                        
+                    }
+                    else
+                    {
+                        Console.WriteLine("---------------------------------------------");
+                        Console.WriteLine("Error: Input must be a number.");
+                        ExternalTransfer(activeAccounts);
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Invalid account number.");
+                    ExternalTransfer(activeAccounts);
+                }
+
             }
+
             
         }
 
@@ -421,6 +486,7 @@ namespace ProjektBankenSquid2
             string chooseaccount = Console.ReadLine();
             if (chooseaccount == "1")
             {
+
                 account.name = "Salary";
                 account.interest_rate = 0;
             }
@@ -446,7 +512,6 @@ namespace ProjektBankenSquid2
             {
                 account.currency_id = 3;
             }
-
             else if(selectcurrency == "4")
             {
                 account.currency_id = 4;
@@ -455,8 +520,10 @@ namespace ProjektBankenSquid2
             Console.WriteLine("How much you want to deposit?");
             account.balance = decimal.Parse(Console.ReadLine());
 
-            Console.WriteLine("Select a number for the account");
-            account.account_number = int.Parse(Console.ReadLine());
+            Random rnd = new Random();
+            int account_number = rnd.Next(1000);
+            //Console.WriteLine("Select a number for the account");
+            account.account_number = account_number;
 
 
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
