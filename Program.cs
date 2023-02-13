@@ -8,11 +8,6 @@ namespace ProjektBankenSquid2
         static void Main(string[] args)
         {
             Database.RunProgram();
-
-            //User newUser = new User("Frank", "Sinatra", "1111");
-            //database.SaveBankUser(newUser);
-            //Console.WriteLine("User added");
-            //Functions.LogIn(); 
         }
     }
 }
