@@ -60,6 +60,7 @@
                                 break;
                             case 2:
                                 Console.WriteLine("Transfer to other account selected");
+                                Database.ListUserAccounts(activeAccount);
                                 Database.ExternalTransfer(activeAccount);
                                 Console.ReadLine();
 
