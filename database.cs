@@ -30,7 +30,7 @@ namespace ProjektBankenSquid2
             List<User> users = Database.LoadBankUsers();
             foreach (User user in users)
             {
-                Console.WriteLine($"Hello {user.first_name} your last name is {user.pin_code}");
+                Console.WriteLine($"Hello {user.first_name} your pincode is {user.pin_code}");
             }
             List<User> activeUser = Database.CheckLogin();
             Functions.Menu(activeUser);
@@ -93,7 +93,7 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<User>("SELECT * FROM bank_user", new DynamicParameters());
+                var output = cnn.Query<User>("SELECT * FROM bank_user  ORDER BY id", new DynamicParameters());
                 //Console.WriteLine(output);
                 return output.ToList();
             }
@@ -107,7 +107,7 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<User>("SELECT * FROM bank_account", new DynamicParameters());
+                var output = cnn.Query<User>("SELECT * FROM bank_account ORDER BY id", new DynamicParameters());
                 //Console.WriteLine(output);
                 return output.ToList();
             }
@@ -122,7 +122,7 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
-                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id = '{user[0].id}'", new DynamicParameters()).ToList();
+                var output = cnn.Query<Account>($"SELECT * FROM bank_account WHERE user_id = '{user[0].id}' ORDER BY id", new DynamicParameters()).ToList();
                 return output;
             }
         }
@@ -404,8 +404,6 @@ namespace ProjektBankenSquid2
                 }
 
             }
-
-            
         }
 
         public static List<Account> ForeignAccount(int accountNumber)
@@ -418,7 +416,6 @@ namespace ProjektBankenSquid2
                 return output.ToList();
             }
         }
-
 
         //Checks if user is allowed to take a loan based on total savings in bank and returns a bool
 
@@ -531,10 +528,5 @@ namespace ProjektBankenSquid2
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
             }
         }
-
-      
-
-       
-
     }
 }
