@@ -2,7 +2,26 @@
 {
     public class Functions
     {
-
+        public static void AciiSquidBank()
+        {
+            string logo = "//    /$$$$$$                      /$$       /$$       /$$                          /$$      \r\n//   /$$__  $$                    |__/      | $$      | $$                         | $$      \r\n//  | $$  \\__/  /$$$$$$  /$$   /$$ /$$  /$$$$$$$      | $$$$$$$  /$$$$$$  /$$$$$$$ | $$   /$$\r\n//  |  $$$$$$  /$$__  $$| $$  | $$| $$ /$$__  $$      | $$__  $$|____  $$| $$__  $$| $$  /$$/\r\n//   \\____  $$| $$  \\ $$| $$  | $$| $$| $$  | $$      | $$  \\ $$ /$$$$$$$| $$  \\ $$| $$$$$$/ \r\n//   /$$  \\ $$| $$  | $$| $$  | $$| $$| $$  | $$      | $$  | $$/$$__  $$| $$  | $$| $$_  $$ \r\n//  |  $$$$$$/|  $$$$$$$|  $$$$$$/| $$|  $$$$$$$      | $$$$$$$/  $$$$$$$| $$  | $$| $$ \\  $$\r\n//   \\______/  \\____  $$ \\______/ |__/ \\_______/      |_______/ \\_______/|__/  |__/|__/  \\__/\r\n//                  | $$                                                                     \r\n//                  | $$                                                                     \r\n//                  |__/                                                                    ";
+            Console.WriteLine(logo);      
+        }
+        public static void AciiAdminMenu() 
+        {
+            string ascii = "//                _           _       \r\n//       /\\      | |         (_)      \r\n//      /  \\   __| |_ __ ___  _ _ __  \r\n//     / /\\ \\ / _` | '_ ` _ \\| | '_ \\ \r\n//    / ____ \\ (_| | | | | | | | | | |\r\n//   /_/    \\_\\__,_|_| |_| |_|_|_| |_|\r\n//                                    \r\n//                                    ";
+            Console.WriteLine(ascii);
+        }
+        public static void AciiClientAdminMenu() 
+        {
+            string ascii = "//     _____ _ _            _               _           _       \r\n//    / ____| (_)          | |     /\\      | |         (_)      \r\n//   | |    | |_  ___ _ __ | |_   /  \\   __| |_ __ ___  _ _ __  \r\n//   | |    | | |/ _ \\ '_ \\| __| / /\\ \\ / _` | '_ ` _ \\| | '_ \\ \r\n//   | |____| | |  __/ | | | |_ / ____ \\ (_| | | | | | | | | | |\r\n//    \\_____|_|_|\\___|_| |_|\\__/_/    \\_\\__,_|_| |_| |_|_|_| |_|\r\n//                                                              \r\n//                                                              ";
+            Console.WriteLine(ascii);
+        }
+        public static void AciiClientMenu() 
+        {
+            string ascii = "//     _____ _ _            _   \r\n//    / ____| (_)          | |  \r\n//   | |    | |_  ___ _ __ | |_ \r\n//   | |    | | |/ _ \\ '_ \\| __|\r\n//   | |____| | |  __/ | | | |_ \r\n//    \\_____|_|_|\\___|_| |_|\\__|\r\n//                              \r\n//                              ";
+            Console.WriteLine(ascii);
+        }
         public static void Menu(List<User> activeUser)
         {
             int selectedOption = 0;
@@ -10,7 +29,8 @@
             {
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 Console.Clear();
-                Console.WriteLine("Bank Menu");
+                AciiClientMenu();
+                //Console.WriteLine("Bank Menu");
 
                 for (int i = 0; i < 7; i++)
                 {
@@ -129,7 +149,7 @@
             {
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 Console.Clear();
-                Console.WriteLine("Admin Bank Menu");
+                AciiAdminMenu();
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -157,7 +177,7 @@
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (selectedOption < 6)
+                        if (selectedOption < 2)
                         {
                             selectedOption++;
                         }
@@ -165,13 +185,13 @@
                     case ConsoleKey.Enter:
                         switch (selectedOption)
                         {
-                           
+
                             case 0:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Create user selected");
                                 Database.CreateUser(activeUser);
                                 Console.ReadLine();
-                                
+
                                 break;
                             case 1:
                                 Console.WriteLine("---------------------------------------------");
@@ -179,7 +199,7 @@
                                 Database.UnlockUser(activeUser);
                                 Console.ReadLine();
                                 break;
-                            case 3:
+                            case 2:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Log out the bank selected");
                                 Console.WriteLine("---------------------------------------------");
@@ -212,7 +232,7 @@
             {
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 Console.Clear();
-                Console.WriteLine("ClientAdmin Bank Menu");
+                AciiClientAdminMenu();
 
                 for (int i = 0; i < 9; i++)
                 {

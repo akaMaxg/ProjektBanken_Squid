@@ -26,7 +26,7 @@ namespace ProjektBankenSquid2
 
         public static void RunProgram()
         {
-            Console.WriteLine("Welcome to Squid-bank");
+            Functions.AciiSquidBank();
             List<User> users = Database.LoadBankUsers();
             foreach (User user in users)
             {
