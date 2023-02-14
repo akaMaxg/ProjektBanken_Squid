@@ -12,7 +12,7 @@
                 Console.Clear();
                 Console.WriteLine("Bank Menu");
 
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < 7; i++)
                 {
                     if (i == selectedOption)
                     {
@@ -38,7 +38,7 @@
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (selectedOption < 5)
+                        if (selectedOption < 6)
                         {
                             selectedOption++;
                         }
@@ -47,11 +47,13 @@
                         switch (selectedOption)
                         {
                             case 0:
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("See accounts and balance selected");
                                 Database.ListUserAccounts(activeAccount);
                                 Console.ReadLine();
                                 break;
                             case 1:
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Transfer between own accounts selected");
                                 Database.ListUserAccounts(activeAccount);
                                 Database.Transfer(activeAccount);
@@ -59,6 +61,7 @@
 
                                 break;
                             case 2:
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Transfer to other account selected");
                                 Database.ListUserAccounts(activeAccount);
                                 Database.ExternalTransfer(activeAccount);
@@ -66,17 +69,30 @@
 
                                 break;
                             case 3:
-                                Console.WriteLine("Loan money selected");
-                                //Database.Loan(activeAccount);
+                                Console.WriteLine("---------------------------------------------");
+                                Console.WriteLine("Deposit Money selected");
+                                Database.ListUserAccounts(activeAccount);
+                                Database.Deposit(activeAccount);
                                 Console.ReadLine();
 
                                 break;
                             case 4:
-                                Console.WriteLine("Create account selected");
-                                Database.CreateAccount(activeUser);
+                                Console.WriteLine("---------------------------------------------");
+                                Console.WriteLine("Withdraw Money selected");
+                                Database.ListUserAccounts(activeAccount);
+                                Database.Withdraw(activeAccount);
+                                Console.ReadLine();
                                 break;
                             case 5:
+                                Console.WriteLine("---------------------------------------------");
+                                Console.WriteLine("Create account selected");
+                                Database.CreateAccount(activeUser);
+                                Console.ReadLine();
+                                break;
+                            case 6:
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Log out the bank selected");
+                                Console.WriteLine("---------------------------------------------");
                                 return;
                         }
                         break;
@@ -94,10 +110,12 @@
                 case 2:
                     return "Transfer to other account";
                 case 3:
-                    return "Loan money";
+                    return "Deposit money";
                 case 4:
-                    return "Create account";
+                    return "Withdraw money";
                 case 5:
+                    return "Create account";
+                case 6:
                     return "Log out the bank";
                 default:
                     return "";
