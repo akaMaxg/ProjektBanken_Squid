@@ -39,7 +39,6 @@ namespace ProjektBankenSquid2
         public static List<User> CheckLogin()
         {
             Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 Console.Write("Enter name: ");
@@ -131,7 +130,6 @@ namespace ProjektBankenSquid2
         public static void ListUserAccounts(List<Account> accounts)
         {
             Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
             int counter = 1;
             string currency = "";
             foreach (var item in accounts) //Lists accounts and balances with numbers
@@ -162,18 +160,20 @@ namespace ProjektBankenSquid2
         public static void Transfer(List<Account> activeAccounts)
         {
             Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
             Console.Write("Type the account you want to transfer from: "); //From
             int choiceFrom = int.Parse(Console.ReadLine()) -1;
+            //checks if user input is a valid account
             if (choiceFrom + 1 <= 0)
             {
+                Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Invalid account number");
-                RunProgram();
+                Transfer(activeAccounts);
             }
             else if (choiceFrom + 1 > activeAccounts.Count)
             {
+                Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Invalid account number");
-                RunProgram();
+                Transfer(activeAccounts);
             }
             int idFrom = activeAccounts[choiceFrom].id;
             int idFromCurrency = activeAccounts[choiceFrom].currency_id;
@@ -197,21 +197,20 @@ namespace ProjektBankenSquid2
                     break;
             }
 
-
+            Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to transfer to: "); //To
             int choiceTo = int.Parse(Console.ReadLine()) - 1;
+            //checks if user input is a valid account
             if (choiceTo + 1 < 0)
             {
                 Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Error! Invalid account number");
-                Console.WriteLine("---------------------------------------------");
                 Transfer(activeAccounts);
             }
             else if (choiceTo + 1 > activeAccounts.Count)
             {
                 Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Error! Invalid account number");
-                Console.WriteLine("---------------------------------------------");
                 Transfer(activeAccounts);
             }
             int idTo = activeAccounts[choiceTo].id;
@@ -236,17 +235,21 @@ namespace ProjektBankenSquid2
                     break;
             }
 
-
+            Console.WriteLine("---------------------------------------------");
             Console.WriteLine("How much money do you want to transfer? ");
+            Console.Write($"{from}: ");
             string input = Console.ReadLine();
+            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
             if (decimal.TryParse(input, out decimal amount))
             {
+                //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
                 if (amount > activeAccounts[choiceFrom].balance)
                 {
                     Console.WriteLine("---------------------------------------------");
                     Console.WriteLine("Error: Insufficient funds.");
                     Transfer(activeAccounts);
                 }
+                //Checks if user input is a negative number, if true gives error and starts the function from the start
                 else if (amount <= 0)
                 {
                     Console.WriteLine("---------------------------------------------");
@@ -283,10 +286,9 @@ namespace ProjektBankenSquid2
         public static void ExternalTransfer(List<Account> activeAccounts)
         {
             Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
-           
             Console.Write("Type the account you want to transfer from: "); //From
             int choiceFrom = int.Parse(Console.ReadLine()) - 1;
+            //checks if user input is a valid account
             if (choiceFrom + 1 <= 0)
             {
                 Console.WriteLine("Invalid account number");
@@ -322,8 +324,8 @@ namespace ProjektBankenSquid2
                 default:
                     break;
             }
-            
-            
+
+            Console.WriteLine("---------------------------------------------");
             Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
             int reciever = int.Parse(Console.ReadLine());
             bool accountNumberCheck = false;
@@ -334,16 +336,19 @@ namespace ProjektBankenSquid2
                 
                 if (output.Count >= 1)
                 {
-                    Console.Write("Enter amount: "); //Test to transfer to external user with known account_number - uses the same account as previous
+                    Console.Write($"Enter amount: {from} "); //Test to transfer to external user with known account_number - uses the same account as previous
                     string input = Console.ReadLine();
+                    //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
                     if (decimal.TryParse(input, out decimal amount))
                     {
+                        //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
                         if (amount > activeAccounts[choiceFrom].balance)
                         {
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Error: Insufficient funds.");
                             ExternalTransfer(activeAccounts);
                         }
+                        //Checks if user input is a negative number, if true gives error and starts the function from the start
                         else if (amount <= 0)
                         {
                             Console.WriteLine("---------------------------------------------");
@@ -403,6 +408,153 @@ namespace ProjektBankenSquid2
                     ExternalTransfer(activeAccounts);
                 }
 
+            }
+        }
+
+        public static void Withdraw(List<Account> activeAccounts)
+        {
+            Console.WriteLine("---------------------------------------------");
+            Console.Write("Type the account you want to withdraw money from: ");
+            int userChoice = int.Parse(Console.ReadLine()) - 1;
+            //checks if user input is a valid account
+            if (userChoice + 1 <= 0)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Invalid account number");
+                Withdraw(activeAccounts);
+            }
+            else if (userChoice + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Invalid account number");
+                Withdraw(activeAccounts);
+            }
+            int id = activeAccounts[userChoice].id;
+            int idCurrency = activeAccounts[userChoice].currency_id;
+            //switch to put right currency in the API string 
+            string currency = "";
+            switch (idCurrency)
+            {
+                case 1:
+                    currency = "SEK";
+                    break;
+                case 2:
+                    currency = "USD";
+                    break;
+                case 3:
+                    currency = "EUR";
+                    break;
+                case 4:
+                    currency = "GBP";
+                    break;
+                default:
+                    break;
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("How much money do you want to withdraw?");
+            Console.Write($"{currency}: ");
+            string input = Console.ReadLine();
+            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+            if (decimal.TryParse(input, out decimal amount))
+            {
+                //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
+                if (amount > activeAccounts[userChoice].balance)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Insufficient funds.");
+                    Withdraw(activeAccounts);
+                }
+                //Checks if user input is a negative number, if true gives error and starts the function from the start
+                else if (amount <= 0)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Can't transfer negative amount.");
+                    Withdraw(activeAccounts);
+                }
+                else
+                {
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    {
+                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("Money successfully withdrawn.");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Input must be a number.");
+                Deposit(activeAccounts);
+            }
+        }
+
+        public static void Deposit(List<Account> activeAccounts)
+        {
+            Console.WriteLine("---------------------------------------------");
+            Console.Write("Type the account you want to deposit money into: ");
+            int userChoice = int.Parse(Console.ReadLine()) - 1;
+            //checks if user input is a valid account
+            if (userChoice + 1 <= 0)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Invalid account number");
+                Deposit(activeAccounts);
+            }
+            else if (userChoice + 1 > activeAccounts.Count)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Invalid account number");
+                Deposit(activeAccounts);
+            }
+            int id = activeAccounts[userChoice].id;
+            int idCurrency = activeAccounts[userChoice].currency_id;
+            //switch to put right currency in the API string 
+            string currency = "";
+            switch (idCurrency)
+            {
+                case 1:
+                    currency = "SEK";
+                    break;
+                case 2:
+                    currency = "USD";
+                    break;
+                case 3:
+                    currency = "EUR";
+                    break;
+                case 4:
+                    currency = "GBP";
+                    break;
+                default:
+                    break;
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("How much money do you want to deposit?");
+            Console.Write($"{currency}: ");
+            string input = Console.ReadLine();
+            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+            if (decimal.TryParse(input, out decimal amount))
+            {
+                //Checks if user input is a negative number, if true gives error and starts the function from the start
+                if (amount <= 0)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Can't transfer negative amount.");
+                    Deposit(activeAccounts);
+                }
+                else
+                {
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    {
+                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("Money successfully deposited.");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Input must be a number.");
+                Deposit(activeAccounts);
             }
         }
 
