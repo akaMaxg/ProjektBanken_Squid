@@ -157,7 +157,7 @@
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (selectedOption < 6)
+                        if (selectedOption < 2)
                         {
                             selectedOption++;
                         }
@@ -165,13 +165,13 @@
                     case ConsoleKey.Enter:
                         switch (selectedOption)
                         {
-                           
+
                             case 0:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Create user selected");
-                                Database.CreateUser(activeUser);
+                                Database.CreateUser();
                                 Console.ReadLine();
-                                
+
                                 break;
                             case 1:
                                 Console.WriteLine("---------------------------------------------");
@@ -179,7 +179,7 @@
                                 Database.UnlockUser(activeUser);
                                 Console.ReadLine();
                                 break;
-                            case 3:
+                            case 2:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Log out the bank selected");
                                 Console.WriteLine("---------------------------------------------");
@@ -300,7 +300,7 @@
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Create user selected");
                                 Console.Clear();
-                                Database.CreateUser(activeUser);
+                                Database.CreateUser();
                                 Console.ReadLine();
                                 break;
                             case 7:
