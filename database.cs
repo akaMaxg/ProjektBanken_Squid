@@ -33,7 +33,18 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"Hello {user.first_name} your pincode is {user.pin_code}");
             }
             List<User> activeUser = Database.CheckLogin();
-            Functions.Menu(activeUser);
+            if (activeUser[0].role_id == 1)
+            {
+                Functions.AdminMenu(activeUser);
+            }
+            else if (activeUser[0].role_id == 2)
+            {
+                Functions.Menu(activeUser);
+            }
+            else
+            {
+                Functions.ClientAdminMenu(activeUser);
+            }
         }
 
         public static List<User> CheckLogin()
@@ -630,6 +641,7 @@ namespace ProjektBankenSquid2
          //Create account
         public static void CreateAccount(List<User> users)
         {
+            Console.WriteLine("---------------------------------------------");
             var account = new Account();
             Console.WriteLine("Choose account\n1.Salary account, 2.Savings account");
             string chooseaccount = Console.ReadLine();
@@ -646,7 +658,7 @@ namespace ProjektBankenSquid2
             }
 
             account.user_id = users[0].id;
-
+            Console.WriteLine("---------------------------------------------");
             Console.WriteLine("Select currency\n1.SEK, 2.USD, 3.EUR, 4.GBP");
             string selectcurrency = Console.ReadLine();
             if (selectcurrency == "1")
@@ -665,8 +677,8 @@ namespace ProjektBankenSquid2
             {
                 account.currency_id = 4;
             }
-
-            Console.WriteLine("How much you want to deposit?");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("How much do you want to deposit?");
             account.balance = decimal.Parse(Console.ReadLine());
 
             Random rnd = new Random();
@@ -678,6 +690,99 @@ namespace ProjektBankenSquid2
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
+            }
+        }
+        //Create user function
+        public static void CreateUser(List<User> users)
+        {
+            Console.WriteLine("---------------------------------------------");
+            //creating a new user object
+            var user = new User();
+
+            //sets user input to the new users first name
+            Console.WriteLine("What is the first name of the account holder?");
+            user.first_name = Console.ReadLine();
+
+
+            //sets user input to the new users last name
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What is the last name of the account holder?");
+            user.last_name = Console.ReadLine();
+
+
+            //sets user input to new users pincode
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("Enter desired 4 number pincode: ");
+            user.pin_code = Console.ReadLine();
+            //Checks if the entered pin is 4 chars long.
+            if (user.pin_code.Length > 4)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Must be 4 number pincode");
+                CreateUser(users);
+            }
+            else if(user.pin_code.Length < 4)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Must be 4 number pincode");
+                CreateUser(users);
+            }
+
+
+            //sets the role of new user
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What type of account is it?");
+            Console.WriteLine("  1. Administrator");
+            Console.WriteLine("  2. Client");
+            Console.WriteLine("  3. ClientAdmin");
+            string typeOfAccount = Console.ReadLine();
+            if (typeOfAccount == "1")
+            {
+                user.role_id = 1;
+            }
+            else if (typeOfAccount == "2")
+            {
+                user.role_id = 2;
+            }
+            else if (typeOfAccount == "3")
+            {
+                user.role_id = 3;
+            }
+            else
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Invalid option");
+                CreateUser(users);
+            }
+
+
+            user.login_attempt = 0;
+            //adds new user object in to database 
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                cnn.Execute("insert into bank_user (first_name, last_name, pin_code, role_id, login_attempt) values (@first_name, @last_name, @pin_code, @role_id, @login_attempt)", user);
+            }
+
+            
+            Console.WriteLine();
+            Console.WriteLine("User Account successfully created.");
+        }
+        public static void UnlockUser(List<User> users)
+        {
+            List<User> bankUsers = Database.LoadBankUsers(); //Creates list of all users so I can print them all out
+
+            Console.WriteLine("|First Name|Last Name");
+            foreach (User user in bankUsers)
+            {
+                Console.WriteLine($"|   {user.first_name}    {user.last_name}");
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What user do you want to unlock? Enter first name: ");
+            string userChoice = Console.ReadLine();
+
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{userChoice}'", new DynamicParameters()); //resets log in counter of selected user
             }
         }
     }
