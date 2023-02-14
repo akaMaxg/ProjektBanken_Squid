@@ -138,6 +138,38 @@ namespace ProjektBankenSquid2
         }
         //Returns the information of someone with a specific account number. 
 
+        public static void SeeAccountsAndBalance(List<Account> accounts)
+        {
+            Console.WriteLine("---------------------------------------------");
+            int counter = 1;
+            string currency = "";
+            foreach (var item in accounts) //Lists accounts and balances with numbers
+            {
+                switch (item.currency_id)
+                {
+                    case 1:
+                        currency = "SEK";
+                        break;
+                    case 2:
+                        currency = "USD";
+                        break;
+                    case 3:
+                        currency = "EUR";
+                        break;
+                    case 4:
+                        currency = "GBP";
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
+                counter++;
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+        }
         public static void ListUserAccounts(List<Account> accounts)
         {
             Console.WriteLine("---------------------------------------------");
@@ -165,6 +197,7 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
                 counter++;
             }
+            
         }
 
         //Transfers money between own accounts
@@ -279,6 +312,7 @@ namespace ProjektBankenSquid2
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
+                            Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Transfered successfully.");
                         }
                     }
@@ -290,7 +324,11 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Transfer(activeAccounts);
             }
-            
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+
         }
 
         //Transfer funds, but to an account that is not logged in 
@@ -401,6 +439,7 @@ namespace ProjektBankenSquid2
                                 API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                                 decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                                 var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
                             }
                         
@@ -420,6 +459,10 @@ namespace ProjektBankenSquid2
                 }
 
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static void Withdraw(List<Account> activeAccounts)
@@ -487,6 +530,7 @@ namespace ProjektBankenSquid2
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully withdrawn.");
                     }
                 }
@@ -497,6 +541,10 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Deposit(activeAccounts);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static void Deposit(List<Account> activeAccounts)
@@ -557,6 +605,7 @@ namespace ProjektBankenSquid2
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully deposited.");
                     }
                 }
@@ -567,6 +616,10 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Deposit(activeAccounts);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static List<Account> ForeignAccount(int accountNumber)
@@ -691,6 +744,12 @@ namespace ProjektBankenSquid2
             {
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("Account successfully created.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
         //Create user function
         public static void CreateUser(List<User> users)
@@ -763,9 +822,13 @@ namespace ProjektBankenSquid2
                 cnn.Execute("insert into bank_user (first_name, last_name, pin_code, role_id, login_attempt) values (@first_name, @last_name, @pin_code, @role_id, @login_attempt)", user);
             }
 
-            
-            Console.WriteLine();
+
+            Console.WriteLine("---------------------------------------------");
             Console.WriteLine("User Account successfully created.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
         public static void UnlockUser(List<User> users)
         {
@@ -784,6 +847,12 @@ namespace ProjektBankenSquid2
             {
                 cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{userChoice}'", new DynamicParameters()); //resets log in counter of selected user
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine($"User {userChoice}'s account has been unlocked.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
     }
 }

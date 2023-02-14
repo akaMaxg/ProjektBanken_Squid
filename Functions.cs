@@ -251,12 +251,14 @@
                             case 0:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("See accounts and balance selected");
-                                Database.ListUserAccounts(activeAccount);
+                                Console.Clear();
+                                Database.SeeAccountsAndBalance(activeAccount);
                                 Console.ReadLine();
                                 break;
                             case 1:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Transfer between own accounts selected");
+                                Console.Clear();
                                 Database.ListUserAccounts(activeAccount);
                                 Database.Transfer(activeAccount);
                                 Console.ReadLine();
@@ -265,6 +267,7 @@
                             case 2:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Transfer to other account selected");
+                                Console.Clear();
                                 Database.ListUserAccounts(activeAccount);
                                 Database.ExternalTransfer(activeAccount);
                                 Console.ReadLine();
@@ -273,6 +276,7 @@
                             case 3:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Deposit Money selected");
+                                Console.Clear();
                                 Database.ListUserAccounts(activeAccount);
                                 Database.Deposit(activeAccount);
                                 Console.ReadLine();
@@ -280,6 +284,7 @@
                             case 4:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Withdraw Money selected");
+                                Console.Clear();
                                 Database.ListUserAccounts(activeAccount);
                                 Database.Withdraw(activeAccount);
                                 Console.ReadLine();
@@ -287,18 +292,21 @@
                             case 5:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Create account selected");
+                                Console.Clear();
                                 Database.CreateAccount(activeUser);
                                 Console.ReadLine();
                                 break;
                             case 6:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("Create user selected");
+                                Console.Clear();
                                 Database.CreateUser(activeUser);
                                 Console.ReadLine();
                                 break;
                             case 7:
                                 Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine("unlock user selected");
+                                Console.Clear();
                                 Database.UnlockUser(activeUser);
                                 Console.ReadLine();
                                 break;
