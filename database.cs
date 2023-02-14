@@ -33,7 +33,18 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"Hello {user.first_name} your pincode is {user.pin_code}");
             }
             List<User> activeUser = Database.CheckLogin();
-            Functions.Menu(activeUser);
+            if (activeUser[0].role_id == 1)
+            {
+                Functions.AdminMenu(activeUser);
+            }
+            else if (activeUser[0].role_id == 2)
+            {
+                Functions.Menu(activeUser);
+            }
+            else
+            {
+                Functions.ClientAdminMenu(activeUser);
+            }
         }
 
         public static List<User> CheckLogin()
@@ -127,6 +138,38 @@ namespace ProjektBankenSquid2
         }
         //Returns the information of someone with a specific account number. 
 
+        public static void SeeAccountsAndBalance(List<Account> accounts)
+        {
+            Console.WriteLine("---------------------------------------------");
+            int counter = 1;
+            string currency = "";
+            foreach (var item in accounts) //Lists accounts and balances with numbers
+            {
+                switch (item.currency_id)
+                {
+                    case 1:
+                        currency = "SEK";
+                        break;
+                    case 2:
+                        currency = "USD";
+                        break;
+                    case 3:
+                        currency = "EUR";
+                        break;
+                    case 4:
+                        currency = "GBP";
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
+                counter++;
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+        }
         public static void ListUserAccounts(List<Account> accounts)
         {
             Console.WriteLine("---------------------------------------------");
@@ -154,6 +197,7 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
                 counter++;
             }
+            
         }
 
         //Transfers money between own accounts
@@ -268,6 +312,7 @@ namespace ProjektBankenSquid2
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
+                            Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Transfered successfully.");
                         }
                     }
@@ -279,7 +324,11 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Transfer(activeAccounts);
             }
-            
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+
         }
 
         //Transfer funds, but to an account that is not logged in 
@@ -390,6 +439,7 @@ namespace ProjektBankenSquid2
                                 API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                                 decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                                 var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                                Console.WriteLine("---------------------------------------------");
                                 Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
                             }
                         
@@ -409,6 +459,10 @@ namespace ProjektBankenSquid2
                 }
 
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static void Withdraw(List<Account> activeAccounts)
@@ -476,6 +530,7 @@ namespace ProjektBankenSquid2
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully withdrawn.");
                     }
                 }
@@ -486,6 +541,10 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Deposit(activeAccounts);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static void Deposit(List<Account> activeAccounts)
@@ -546,6 +605,7 @@ namespace ProjektBankenSquid2
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully deposited.");
                     }
                 }
@@ -556,6 +616,10 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Deposit(activeAccounts);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
 
         public static List<Account> ForeignAccount(int accountNumber)
@@ -630,6 +694,7 @@ namespace ProjektBankenSquid2
          //Create account
         public static void CreateAccount(List<User> users)
         {
+            Console.WriteLine("---------------------------------------------");
             var account = new Account();
             Console.WriteLine("Choose account\n1.Salary account, 2.Savings account");
             string chooseaccount = Console.ReadLine();
@@ -646,7 +711,7 @@ namespace ProjektBankenSquid2
             }
 
             account.user_id = users[0].id;
-
+            Console.WriteLine("---------------------------------------------");
             Console.WriteLine("Select currency\n1.SEK, 2.USD, 3.EUR, 4.GBP");
             string selectcurrency = Console.ReadLine();
             if (selectcurrency == "1")
@@ -665,8 +730,8 @@ namespace ProjektBankenSquid2
             {
                 account.currency_id = 4;
             }
-
-            Console.WriteLine("How much you want to deposit?");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("How much do you want to deposit?");
             account.balance = decimal.Parse(Console.ReadLine());
 
             Random rnd = new Random();
@@ -679,6 +744,115 @@ namespace ProjektBankenSquid2
             {
                 cnn.Execute("insert into bank_account (name, interest_rate, user_id, currency_id, balance, account_number) values (@name, @interest_rate, @user_id, @currency_id, @balance, @account_number)", account);
             }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("Account successfully created.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+        }
+        //Create user function
+        public static void CreateUser(List<User> users)
+        {
+            Console.WriteLine("---------------------------------------------");
+            //creating a new user object
+            var user = new User();
+
+            //sets user input to the new users first name
+            Console.WriteLine("What is the first name of the account holder?");
+            user.first_name = Console.ReadLine();
+
+
+            //sets user input to the new users last name
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What is the last name of the account holder?");
+            user.last_name = Console.ReadLine();
+
+
+            //sets user input to new users pincode
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("Enter desired 4 number pincode: ");
+            user.pin_code = Console.ReadLine();
+            //Checks if the entered pin is 4 chars long.
+            if (user.pin_code.Length > 4)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Must be 4 number pincode");
+                CreateUser(users);
+            }
+            else if(user.pin_code.Length < 4)
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Must be 4 number pincode");
+                CreateUser(users);
+            }
+
+
+            //sets the role of new user
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What type of account is it?");
+            Console.WriteLine("  1. Administrator");
+            Console.WriteLine("  2. Client");
+            Console.WriteLine("  3. ClientAdmin");
+            string typeOfAccount = Console.ReadLine();
+            if (typeOfAccount == "1")
+            {
+                user.role_id = 1;
+            }
+            else if (typeOfAccount == "2")
+            {
+                user.role_id = 2;
+            }
+            else if (typeOfAccount == "3")
+            {
+                user.role_id = 3;
+            }
+            else
+            {
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Invalid option");
+                CreateUser(users);
+            }
+
+
+            user.login_attempt = 0;
+            //adds new user object in to database 
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                cnn.Execute("insert into bank_user (first_name, last_name, pin_code, role_id, login_attempt) values (@first_name, @last_name, @pin_code, @role_id, @login_attempt)", user);
+            }
+
+
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("User Account successfully created.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
+        }
+        public static void UnlockUser(List<User> users)
+        {
+            List<User> bankUsers = Database.LoadBankUsers(); //Creates list of all users so I can print them all out
+
+            Console.WriteLine("|First Name|Last Name");
+            foreach (User user in bankUsers)
+            {
+                Console.WriteLine($"|   {user.first_name}    {user.last_name}");
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("What user do you want to unlock? Enter first name: ");
+            string userChoice = Console.ReadLine();
+
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{userChoice}'", new DynamicParameters()); //resets log in counter of selected user
+            }
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine($"User {userChoice}'s account has been unlocked.");
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("→ Press enter to return to main menu...");
         }
     }
 }
