@@ -1,18 +1,9 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using Npgsql;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
-using System.Data.SQLite;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Security.Policy;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Data.Entity.Infrastructure.Design.Executor;
 
 namespace ProjektBankenSquid2
 {
@@ -92,7 +83,7 @@ namespace ProjektBankenSquid2
         {
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-               
+
                 cnn.Execute("insert into bank_user (first_name, last_name, pin_code) values (@first_name, @last_name, @pin_code)", user);
 
             }
@@ -197,7 +188,7 @@ namespace ProjektBankenSquid2
                 Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
                 counter++;
             }
-            
+
         }
 
         //Transfers money between own accounts
@@ -205,7 +196,7 @@ namespace ProjektBankenSquid2
         {
             Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to transfer from: "); //From
-            int choiceFrom = int.Parse(Console.ReadLine()) -1;
+            int choiceFrom = int.Parse(Console.ReadLine()) - 1;
             //checks if user input is a valid account
             if (choiceFrom + 1 <= 0)
             {
@@ -382,7 +373,7 @@ namespace ProjektBankenSquid2
             {
 
                 var output = cnn.Query<User>($"SELECT * FROM bank_account WHERE account_number = '{reciever}'", new DynamicParameters()).ToList();
-                
+
                 if (output.Count >= 1)
                 {
                     Console.Write($"Enter amount: {from} "); //Test to transfer to external user with known account_number - uses the same account as previous
@@ -430,19 +421,19 @@ namespace ProjektBankenSquid2
                             default:
                                 break;
                         }
-                        
 
-                            String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
-                            using (var webClient = new System.Net.WebClient())
-                            {
-                                var json = webClient.DownloadString(URLString);
-                                API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                                decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                                var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
-                                Console.WriteLine("---------------------------------------------");
-                                Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
-                            }
-                        
+
+                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                        using (var webClient = new System.Net.WebClient())
+                        {
+                            var json = webClient.DownloadString(URLString);
+                            API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
+                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                            var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                            Console.WriteLine("---------------------------------------------");
+                            Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
+                        }
+
                     }
                     else
                     {
@@ -637,14 +628,14 @@ namespace ProjektBankenSquid2
 
         //public static bool SetLoanPermission(List<Account> activeAccount, decimal loanAmount)
         //{
-            
+
         //    bool loanPermission;
         //    loanAmount *= 5;
-            
+
         //    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
         //    {
         //        var output = Convert.ToDecimal(cnn.Query<Account>($"SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
-                
+
         //        if (output < loanAmount + 1)
         //        {
         //            loanPermission = false;
@@ -655,7 +646,7 @@ namespace ProjektBankenSquid2
         //        }
         //        return loanPermission;
         //    }
-          
+
         //}
 
         //Makes the actual loan transfer of requested amount to requested account
@@ -691,7 +682,7 @@ namespace ProjektBankenSquid2
         //}
 
 
-         //Create account
+        //Create account
         public static void CreateAccount(List<User> users)
         {
             Console.WriteLine("---------------------------------------------");
@@ -704,7 +695,7 @@ namespace ProjektBankenSquid2
                 account.name = "Salary";
                 account.interest_rate = 0;
             }
-            else if(chooseaccount == "2")
+            else if (chooseaccount == "2")
             {
                 account.name = "Savings";
                 account.interest_rate = 2.5m;
@@ -718,21 +709,19 @@ namespace ProjektBankenSquid2
             {
                 account.currency_id = 1;
             }
-            else if(selectcurrency == "2")
+            else if (selectcurrency == "2")
             {
                 account.currency_id = 2;
             }
-            else if(selectcurrency == "3")
+            else if (selectcurrency == "3")
             {
                 account.currency_id = 3;
             }
-            else if(selectcurrency == "4")
+            else if (selectcurrency == "4")
             {
                 account.currency_id = 4;
             }
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine("How much do you want to deposit?");
-            account.balance = decimal.Parse(Console.ReadLine());
+            account.balance = 0;
 
             Random rnd = new Random();
             int account_number = rnd.Next(1000);
@@ -752,7 +741,7 @@ namespace ProjektBankenSquid2
             Console.WriteLine("→ Press enter to return to main menu...");
         }
         //Create user function
-        public static void CreateUser(List<User> users)
+        public static void CreateUser()
         {
             Console.WriteLine("---------------------------------------------");
             //creating a new user object
@@ -774,19 +763,25 @@ namespace ProjektBankenSquid2
             Console.WriteLine("Enter desired 4 number pincode: ");
             user.pin_code = Console.ReadLine();
             //Checks if the entered pin is 4 chars long.
-            if (user.pin_code.Length > 4)
+            if (int.TryParse(user.pin_code, out int output))
             {
-                Console.WriteLine("---------------------------------------------");
-                Console.WriteLine("Error: Must be 4 number pincode");
-                CreateUser(users);
+                if (user.pin_code.Length > 4 | user.pin_code.Length < 4)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Must be 4 number pincode");
+                    CreateUser();
+                }
             }
-            else if(user.pin_code.Length < 4)
+            else
             {
+                Console.WriteLine();
+                Console.WriteLine();
                 Console.WriteLine("---------------------------------------------");
-                Console.WriteLine("Error: Must be 4 number pincode");
-                CreateUser(users);
+                Console.WriteLine("Error: Can not contain letters, re-enter the creation");
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine();
+                CreateUser();
             }
-
 
             //sets the role of new user
             Console.WriteLine("---------------------------------------------");
@@ -811,7 +806,7 @@ namespace ProjektBankenSquid2
             {
                 Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Error: Invalid option");
-                CreateUser(users);
+                CreateUser();
             }
 
 
