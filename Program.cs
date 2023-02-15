@@ -7,7 +7,31 @@ namespace ProjektBankenSquid2
     {
         static void Main(string[] args)
         {
-            Database.RunProgram();
+            
+            
+            bool introScreen = true;
+            Functions.HentaiSquid();
+            while (introScreen == true)
+            {
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                switch (keyInfo.Key)
+                {
+
+                    case ConsoleKey.Enter:
+                        introScreen = false;
+                        Console.Clear();
+                        Database.RunProgram();
+                        break;
+                    case ConsoleKey.Spacebar:
+                        introScreen = false;
+                        Console.Clear();
+                        Database.RunProgram();
+                        break;
+                }
+            }
+            
+
+
         }
     }
 }
