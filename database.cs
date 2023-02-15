@@ -8,6 +8,7 @@ using System.ComponentModel;
 
 using System.Configuration;
 using System.Data;
+using System.Diagnostics.Metrics;
 
 namespace ProjektBankenSquid2
 {
@@ -23,10 +24,18 @@ namespace ProjektBankenSquid2
         {
             Functions.AsciiSquidBank();
             List<User> users = Database.LoadBankUsers();
+            var table = new Table();
+            // sets tables border
+            table.Border(TableBorder.Ascii);
+            // Adds columns
+            table.AddColumn("First Name");
+            table.AddColumn(new TableColumn("Pincode"));
             foreach (User user in users)
             {
-                Console.WriteLine($"Hello {user.first_name} your pincode is {user.pin_code}");
+                table.AddRow($"{user.first_name}", $"{user.pin_code}");
             }
+            //Prints out the full table
+            AnsiConsole.Write(table);
             List<User> activeUser = Database.CheckLogin();
             if (activeUser[0].role_id == 1)
             {
@@ -50,7 +59,6 @@ namespace ProjektBankenSquid2
         }
         public static List<User> CheckLogin()
         {
-            Console.WriteLine("---------------------------------------------");
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 Console.Write("Enter name: ");
