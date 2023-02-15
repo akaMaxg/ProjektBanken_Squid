@@ -1,7 +1,11 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using Npgsql;
+
 using Spectre.Console;
+
+using System.ComponentModel;
+
 using System.Configuration;
 using System.Data;
 
@@ -212,9 +216,9 @@ namespace ProjektBankenSquid2
                 table.AddRow($"{counter}", $"{item.name}", $"{item.balance} {currency}", $"{item.account_number}");
                 counter++;
             }
+
             //Prints out the full table
             AnsiConsole.Write(table);
-
         }
 
         //Transfers money between own accounts
@@ -748,9 +752,7 @@ namespace ProjektBankenSquid2
             {
                 account.currency_id = 4;
             }
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine("How much do you want to deposit?");
-            account.balance = decimal.Parse(Console.ReadLine());
+            account.balance = 0;
 
             Random rnd = new Random();
             int account_number = rnd.Next(1000);
@@ -770,7 +772,7 @@ namespace ProjektBankenSquid2
             Console.WriteLine("→ Press enter to return to main menu...");
         }
         //Create user function
-        public static void CreateUser(List<User> users)
+        public static void CreateUser()
         {
             Console.WriteLine("---------------------------------------------");
             //creating a new user object
@@ -792,19 +794,28 @@ namespace ProjektBankenSquid2
             Console.WriteLine("Enter desired 4 number pincode: ");
             user.pin_code = Console.ReadLine();
             //Checks if the entered pin is 4 chars long.
-            if (user.pin_code.Length > 4)
+            if (int.TryParse(user.pin_code, out int output))
             {
-                Console.WriteLine("---------------------------------------------");
-                Console.WriteLine("Error: Must be 4 number pincode");
-                CreateUser(users);
-            }
+                if (user.pin_code.Length > 4 | user.pin_code.Length < 4)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Error: Must be 4 number pincode");
+                    CreateUser();
+                }
+            
             else if (user.pin_code.Length < 4)
-            {
-                Console.WriteLine("---------------------------------------------");
-                Console.WriteLine("Error: Must be 4 number pincode");
-                CreateUser(users);
-            }
 
+            else
+
+            {
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine("Error: Can not contain letters, re-enter the creation");
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine();
+                CreateUser();
+            }
 
             //sets the role of new user
             Console.WriteLine("---------------------------------------------");
@@ -829,7 +840,7 @@ namespace ProjektBankenSquid2
             {
                 Console.WriteLine("---------------------------------------------");
                 Console.WriteLine("Error: Invalid option");
-                CreateUser(users);
+                CreateUser();
             }
 
 

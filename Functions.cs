@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace ProjektBankenSquid2
 {
@@ -110,7 +110,6 @@ namespace ProjektBankenSquid2
             {
                 Console.Clear();
                 List<Account> activeAccount = Database.UserAccount(activeUser);
-                // Ask for the user's favorite fruit
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select desired task:")
@@ -153,7 +152,6 @@ namespace ProjektBankenSquid2
                 {
                     Console.Clear();
                     List<Account> activeAccount = Database.UserAccount(activeUser);
-                    // Ask for the user's favorite fruit
                     var selectedOption = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Select desired task:")
@@ -244,7 +242,6 @@ namespace ProjektBankenSquid2
             {
                 Console.Clear();
                 List<Account> activeAccount = Database.UserAccount(activeUser);
-                // Ask for the user's favorite fruit
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select desired task:")
