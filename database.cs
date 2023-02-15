@@ -44,7 +44,7 @@ namespace ProjektBankenSquid2
         public static string PassPrompt()
         {
             return AnsiConsole.Prompt(
-                new TextPrompt<string>("Enter [green]password[/]?")
+                new TextPrompt<string>("Enter [green]password[/]:")
                 .PromptStyle("red")
                 .Secret());
         }
@@ -802,11 +802,8 @@ namespace ProjektBankenSquid2
                     Console.WriteLine("Error: Must be 4 number pincode");
                     CreateUser();
                 }
-            
-            else if (user.pin_code.Length < 4)
-
+            }
             else
-
             {
                 Console.WriteLine();
                 Console.WriteLine();
