@@ -109,6 +109,7 @@ namespace ProjektBankenSquid2
             while (true)
             {
                 Console.Clear();
+                AsciiAdminMenu(activeUser);
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -125,7 +126,7 @@ namespace ProjektBankenSquid2
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Create new user account selected");
                         Console.Clear();
-                        Database.CreateUser(activeUser);
+                        Database.CreateUser();
                         Console.ReadLine();
                         break;
 
@@ -151,6 +152,7 @@ namespace ProjektBankenSquid2
                 while (true)
                 {
                     Console.Clear();
+                    AsciiClientAdminMenu(activeUser);
                     List<Account> activeAccount = Database.UserAccount(activeUser);
                     var selectedOption = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -213,7 +215,7 @@ namespace ProjektBankenSquid2
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Create new user account selected");
                             Console.Clear();
-                            Database.CreateUser(activeUser);
+                            Database.CreateUser();
                             Console.ReadLine();
                             break;
 
@@ -241,6 +243,7 @@ namespace ProjektBankenSquid2
             while (true)
             {
                 Console.Clear();
+                AsciiClientMenu(activeUser);
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
