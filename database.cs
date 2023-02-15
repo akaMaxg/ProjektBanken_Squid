@@ -1,7 +1,11 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using Npgsql;
+
+using Spectre.Console;
+
 using System.ComponentModel;
+
 using System.Configuration;
 using System.Data;
 
@@ -17,7 +21,7 @@ namespace ProjektBankenSquid2
 
         public static void RunProgram()
         {
-            Functions.AciiSquidBank();
+            Functions.AsciiSquidBank();
             List<User> users = Database.LoadBankUsers();
             foreach (User user in users)
             {
@@ -37,7 +41,13 @@ namespace ProjektBankenSquid2
                 Functions.ClientAdminMenu(activeUser);
             }
         }
-
+        public static string PassPrompt()
+        {
+            return AnsiConsole.Prompt(
+                new TextPrompt<string>("Enter [green]password[/]?")
+                .PromptStyle("red")
+                .Secret());
+        }
         public static List<User> CheckLogin()
         {
             Console.WriteLine("---------------------------------------------");
@@ -45,8 +55,10 @@ namespace ProjektBankenSquid2
             {
                 Console.Write("Enter name: ");
                 string firstName = Console.ReadLine();
-                Console.Write("Enter pincode: ");
-                string pinCode = Console.ReadLine();
+                //Console.Write("Enter pincode: ");
+                string pinCode = PassPrompt();
+
+
 
 
                 var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()).ToList();
@@ -131,9 +143,16 @@ namespace ProjektBankenSquid2
 
         public static void SeeAccountsAndBalance(List<Account> accounts)
         {
-            Console.WriteLine("---------------------------------------------");
             int counter = 1;
             string currency = "";
+            var table = new Table();
+            // sets tables border
+            table.Border(TableBorder.Ascii);
+            // Adds columns
+            table.AddColumn("|");
+            table.AddColumn(new TableColumn("Account Name"));
+            table.AddColumn(new TableColumn("Account Balance"));
+            table.AddColumn(new TableColumn("Account Number"));
             foreach (var item in accounts) //Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
@@ -153,19 +172,27 @@ namespace ProjektBankenSquid2
                     default:
                         break;
                 }
-                Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
+                //Adds one row to table per loop iteration
+                table.AddRow($"{counter}", $"{item.name}", $"{item.balance} {currency}", $"{item.account_number}");
                 counter++;
             }
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine();
+            //Prints out the full table
+            AnsiConsole.Write(table);
             Console.WriteLine();
             Console.WriteLine("→ Press enter to return to main menu...");
         }
         public static void ListUserAccounts(List<Account> accounts)
         {
-            Console.WriteLine("---------------------------------------------");
             int counter = 1;
             string currency = "";
+            var table = new Table();
+            // sets tables border
+            table.Border(TableBorder.Ascii);
+            // Adds columns
+            table.AddColumn("|");
+            table.AddColumn(new TableColumn("Account Name"));
+            table.AddColumn(new TableColumn("Account Balance"));
+            table.AddColumn(new TableColumn("Account Number"));
             foreach (var item in accounts) //Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
@@ -185,10 +212,13 @@ namespace ProjektBankenSquid2
                     default:
                         break;
                 }
-                Console.WriteLine($"{counter}. {item.name}, {item.balance} {currency}");
+                //Adds one row to table per loop iteration
+                table.AddRow($"{counter}", $"{item.name}", $"{item.balance} {currency}", $"{item.account_number}");
                 counter++;
             }
 
+            //Prints out the full table
+            AnsiConsole.Write(table);
         }
 
         //Transfers money between own accounts
@@ -303,8 +333,9 @@ namespace ProjektBankenSquid2
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Transfered successfully.");
+                            Console.WriteLine();
+                            Functions.LoadingTransfer();
+                            //Console.WriteLine("Transfered successfully.");
                         }
                     }
                 }
@@ -315,7 +346,7 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Transfer(activeAccounts);
             }
-            Console.WriteLine("---------------------------------------------");
+            Thread.Sleep(2500);
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("→ Press enter to return to main menu...");
@@ -771,8 +802,11 @@ namespace ProjektBankenSquid2
                     Console.WriteLine("Error: Must be 4 number pincode");
                     CreateUser();
                 }
-            }
+            
+            else if (user.pin_code.Length < 4)
+
             else
+
             {
                 Console.WriteLine();
                 Console.WriteLine();
@@ -827,20 +861,29 @@ namespace ProjektBankenSquid2
         }
         public static void UnlockUser(List<User> users)
         {
-            List<User> bankUsers = Database.LoadBankUsers(); //Creates list of all users so I can print them all out
+            List<User> bankUsers = Database.LoadBankUsers(); // Creates list of all users so I can print them all out
 
-            Console.WriteLine("|First Name|Last Name");
+            // Create a table
+            var table = new Table();
+            // Sets table border
+            table.Border(TableBorder.Ascii);
+            // Add some columns
+            table.AddColumn("First Name");
+            table.AddColumn(new TableColumn("Last Name"));
             foreach (User user in bankUsers)
             {
-                Console.WriteLine($"|   {user.first_name}    {user.last_name}");
+                // Adds one row to table per loop iteration 
+                table.AddRow($"{user.first_name}", $"{user.last_name}");
             }
-            Console.WriteLine("---------------------------------------------");
+            // Prints table 
+            AnsiConsole.Write(table);
+            
             Console.WriteLine("What user do you want to unlock? Enter first name: ");
             string userChoice = Console.ReadLine();
 
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
-                cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{userChoice}'", new DynamicParameters()); //resets log in counter of selected user
+                cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{userChoice}'", new DynamicParameters()); // Resets login counter of selected user
             }
             Console.WriteLine("---------------------------------------------");
             Console.WriteLine($"User {userChoice}'s account has been unlocked.");
