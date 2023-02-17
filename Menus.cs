@@ -4,114 +4,16 @@ using System.Transactions;
 
 namespace ProjektBankenSquid2
 {
-    public class Functions
+
+    public class Menus
     {
-        //prints out an img of a squid
-        public static void HentaiSquid()
-        {
-            var image = new CanvasImage("squid2.png");
-
-            // Set the max width of the image.
-            // If no max width is set, the image will take
-            // up as much space as there is available.
-            image.MaxWidth(64);
-
-            // Render the image to the console
-            AnsiConsole.Write(image);
-        }
-        //Function to print out ascii art of Login text using Spectre.Console
-        public static void AsciiSquidBank()
-        {
-            var font = FigletFont.Load("starwars.flf");
-            AnsiConsole.Write(
-            new FigletText(font,"Squid Bank")
-                //.LeftJustified()
-                .Color(Color.SteelBlue1));
-
-        }
-        //Function to print out ascii art in the admin menu using Spectre.Console
-        public static void AsciiAdminMenu(List<User> activeUser) 
-        {
-            AnsiConsole.Write(
-            new FigletText("Admin")
-                //.LeftJustified()
-                .Color(Color.Yellow));
-            AnsiConsole.Write(
-            new FigletText($"{activeUser[0].first_name}")
-                .Centered()
-                .Color(Color.Yellow));
-        }
-        //Function to print out ascii art in the adminclient menu using Spectre.Console
-        public static void AsciiClientAdminMenu(List<User> activeUser) 
-        {
-            AnsiConsole.Write(
-            new FigletText($"ClientAdmin")
-                //.LeftJustified()
-                .Color(Color.Orange1));
-            AnsiConsole.Write(
-            new FigletText($"{activeUser[0].first_name}")
-                .Centered()
-                .Color(Color.Orange1));
-        }
-        //Function to print out ascii art in the client menu using Spectre.Console
-        public static void AsciiClientMenu(List<User> activeUser) 
-        {
-            AnsiConsole.Write(
-            new FigletText($"{activeUser[0].first_name}")
-                .Centered()
-                .Color(Color.SteelBlue1));
-        }
-        //Animation of a loading bar made for listing accounts
-        public static void LoadingAccounts()
-        {
-            AnsiConsole.Progress()
-               .StartAsync(async ctx =>
-               {
-                   // Define tasks
-                   var task1 = ctx.AddTask("[green]Loading accounts[/]");
-
-
-                   while (!ctx.IsFinished)
-                   {
-                       // Simulate some work
-                       await Task.Delay(150);
-
-                       // Increment
-                       task1.Increment(7.5);
-
-                   }
-               });
-        }
-        //Animation of a loading bar made for transfers
-        public static void LoadingTransfer() 
-        {
-            AnsiConsole.Progress()
-                   .StartAsync(async ctx =>
-                   {
-                       // Define tasks
-                       var task1 = ctx.AddTask("[green]Transfering[/]");
-
-
-                       while (!ctx.IsFinished)
-                       {
-                           // Simulate some work
-                           await Task.Delay(150);
-
-                           // Increment
-                           task1.Increment(10.5);
-
-                       }
-                       Console.WriteLine("  Transfer successfully completed");
-                   });
-        }
-
         public static void AdminMenu(List<User> activeUser)
         {
 
             while (true)
             {
                 Console.Clear();
-                AsciiAdminMenu(activeUser);
+                Ascii.AsciiAdminMenu(activeUser);
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -125,17 +27,15 @@ namespace ProjektBankenSquid2
                 switch (selectedOption)
                 {
                     case "Create new user account":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Create new user account selected");
                         Console.Clear();
+                        Ascii.AsciiNewUserAccount();
                         Database.CreateUser();
                         Console.ReadLine();
                         break;
 
                     case "Unlock user":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Unlock user selected");
                         Console.Clear();
+                        Ascii.AsciiUnlockUser();
                         Database.UnlockUser(activeUser);
                         Console.ReadLine();
                         break;
@@ -154,86 +54,84 @@ namespace ProjektBankenSquid2
                 while (true)
                 {
                     Console.Clear();
-                    AsciiClientAdminMenu(activeUser);
+                    Ascii.AsciiClientAdminMenu(activeUser);
                     List<Account> activeAccount = Database.UserAccount(activeUser);
                     var selectedOption = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Select desired task:")
-                        .PageSize(9)
+                        .PageSize(10)
                         .MoreChoicesText("[grey](Move up and down using arrow keys)[/]")
                         .AddChoices(new[] {
                          "View your bank accounts", "Transfer between own accounts", "Transfer to other account",
-                            "Deposit money", "Withdraw money", "Open new account", "Unlock user", "Create new user account","See your transactions", 
+                            "Deposit money", "Withdraw money", "Open new account", "Unlock user", "Create new user account","Transaction history", 
                             "Log out",
                         }));
                 switch (selectedOption)
                     {
                         case "View your bank accounts":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("See accounts and balance selected");
                             Console.Clear();
-                            LoadingAccounts();
+                            Ascii.LoadingAccounts();
                             Thread.Sleep(2300);
+                            Console.Clear();
+                            Ascii.AsciiViewAccounts();
                             Database.SeeAccountsAndBalance(activeAccount);
                             Console.ReadLine();
                             break;
                         case "Transfer between own accounts":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Transfer between own accounts selected");
+                            Console.Clear();
+                            Ascii.AsciiTransfer();
                             Database.ListUserAccounts(activeAccount);
                             Database.Transfer(activeAccount);
                             Console.ReadLine();
 
                             break;
                         case "Transfer to other account":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Transfer to other account selected");
+                            Console.Clear();
+                            Ascii.AsciiTransfer();
                             Database.ListUserAccounts(activeAccount);
                             Database.ExternalTransfer(activeAccount);
                             Console.ReadLine();
 
                             break;
                         case "Deposit money":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Deposit Money selected");
+                            Console.Clear();
+                            Ascii.AsciiDeposit();
                             Database.ListUserAccounts(activeAccount);
                             Database.Deposit(activeAccount);
                             Console.ReadLine();
                             break;
                         case "Withdraw money":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Withdraw Money selected");
+                            Console.Clear();
+                            Ascii.AsciiWithdraw();
                             Database.ListUserAccounts(activeAccount);
                             Database.Withdraw(activeAccount);
                             Console.ReadLine();
                             break;
                         case "Open new account":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Create account selected");
+                            Console.Clear();
+                            Ascii.AsciiNewAccount();
                             Database.CreateAccount(activeUser);
                             Console.ReadLine();
                             break;
                         case "Create new user account":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Create new user account selected");
                             Console.Clear();
+                            Ascii.AsciiNewUserAccount();
                             Database.CreateUser();
                             Console.ReadLine();
                             break;
 
                         case "Unlock user":
-                            Console.WriteLine("---------------------------------------------");
-                            Console.WriteLine("Unlock user selected");
                             Console.Clear();
+                            Ascii.AsciiUnlockUser();
                             Database.UnlockUser(activeUser);
                             Console.ReadLine();
                             break;
 
-                        case "See your transactions":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("See your transaction selected");
-                        Database.GetTransactionByUser(activeAccount);
-                        Console.ReadLine();
+                        case "Transaction history":
+                            Console.Clear();
+                            Ascii.AsciiTransactionHistory();
+                            Database.GetTransactionByUser(activeAccount);
+                            Console.ReadLine();
                             break;
 
                         case "Log out":
@@ -253,69 +151,69 @@ namespace ProjektBankenSquid2
             while (true)
             {
                 Console.Clear();
-                AsciiClientMenu(activeUser);
+                Ascii.AsciiClientMenu(activeUser);
                 List<Account> activeAccount = Database.UserAccount(activeUser);
                 var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select desired task:")
-                    .PageSize(7)
+                    .PageSize(8)
                     .MoreChoicesText("[grey](Move up and down using arrow keys)[/]")
                     .AddChoices(new[] {
                          "View your bank accounts", "Transfer between own accounts", "Transfer to other account",
-                         "Deposit money", "Withdraw money", "Open new account", "See your transactions", "Log out",
+                         "Deposit money", "Withdraw money", "Open new account", "Transaction history", "Log out",
 
                     }));
                 switch (selectedOption)
                 {
                     case "View your bank accounts":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("See accounts and balance selected");
                         Console.Clear();
-                        LoadingAccounts();
+                        Ascii.LoadingAccounts();
                         Thread.Sleep(2300);
+                        Console.Clear();
+                        Ascii.AsciiViewAccounts();
                         Database.SeeAccountsAndBalance(activeAccount);
                         Console.ReadLine();
                         break;
                     case "Transfer between own accounts":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Transfer between own accounts selected");
+                        Console.Clear();
+                        Ascii.AsciiTransfer();
                         Database.ListUserAccounts(activeAccount);
                         Database.Transfer(activeAccount);
                         Console.ReadLine();
 
                         break;
                     case "Transfer to other account":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Transfer to other account selected");
+                        Console.Clear();
+                        Ascii.AsciiTransfer();
                         Database.ListUserAccounts(activeAccount);
                         Database.ExternalTransfer(activeAccount);
                         Console.ReadLine();
 
                         break;
                     case "Deposit money":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Deposit Money selected");
+                        Console.Clear();
+                        Ascii.AsciiDeposit();
                         Database.ListUserAccounts(activeAccount);
                         Database.Deposit(activeAccount);
                         Console.ReadLine();
                         break;
                     case "Withdraw money":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Withdraw Money selected");
+                        Console.Clear();
+                        Ascii.AsciiWithdraw();
                         Database.ListUserAccounts(activeAccount);
                         Database.Withdraw(activeAccount);
                         Console.ReadLine();
                         break;
                     case "Open new account":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Create account selected");
+                        Console.Clear();
+                        Ascii.AsciiNewAccount();
                         Database.CreateAccount(activeUser);
                         Console.ReadLine();
                         break;
 
-                    case "See your transactions":
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("See your transactions selected");
+                    case "Transaction history":
+                        Console.Clear();
+                        Ascii.AsciiTransactionHistory();
                         Database.GetTransactionByUser(activeAccount);
                         Console.ReadLine();
                         break;
