@@ -10,7 +10,7 @@ namespace ProjektBankenSquid2
             
             
             bool introScreen = true;
-            Functions.HentaiSquid();
+            Ascii.HentaiSquid();
             while (introScreen == true)
             {
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);

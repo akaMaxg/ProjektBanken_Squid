@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.Security.Principal;
 
 namespace ProjektBankenSquid2
 {
@@ -22,10 +23,10 @@ namespace ProjektBankenSquid2
 
         public static void RunProgram()
         {
-            Functions.AsciiSquidBank();
+            Ascii.AsciiSquidBank();
             List<User> users = Database.LoadBankUsers();
             var table = new Table();
-            // sets tables border
+            // Sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
             table.AddColumn("First Name");
@@ -34,26 +35,27 @@ namespace ProjektBankenSquid2
             {
                 table.AddRow($"{user.first_name}", $"{user.pin_code}");
             }
-            //Prints out the full table
+            // Render the table to the console
             AnsiConsole.Write(table);
             List<User> activeUser = Database.CheckLogin();
             if (activeUser[0].role_id == 1)
             {
-                Functions.AdminMenu(activeUser);
+                Menus.AdminMenu(activeUser);
             }
             else if (activeUser[0].role_id == 2)
             {
-                Functions.Menu(activeUser);
+                Menus.Menu(activeUser);
             }
             else
             {
-                Functions.ClientAdminMenu(activeUser);
+                Menus.ClientAdminMenu(activeUser);
             }
         }
+        // Function to hide what the user types in when entering pincode
         public static string PassPrompt()
         {
             return AnsiConsole.Prompt(
-                new TextPrompt<string>("Enter [green]password[/]:")
+                new TextPrompt<string>("Enter [green]pincode[/]:")
                 .PromptStyle("red")
                 .Secret());
         }
@@ -63,33 +65,32 @@ namespace ProjektBankenSquid2
             {
                 Console.Write("Enter name: ");
                 string firstName = Console.ReadLine();
-                //Console.Write("Enter pincode: ");
                 string pinCode = PassPrompt();
 
 
 
 
                 var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()).ToList();
-                var outputTwo = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}'", new DynamicParameters()).ToList(); //Sets user for wrong code increment
-                if (outputTwo[0].login_attempt <= 3) //If a user with matchning name exists, check so attempts <=3
+                var outputTwo = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}'", new DynamicParameters()).ToList(); // Sets user for wrong code increment
+                if (outputTwo[0].login_attempt <= 3) // If a user with matchning name exists, check so attempts <=3
                 {
-                    if (output.Any()) //if output returns anything, a match on both name and pin - continue
+                    if (output.Any()) // If output returns anything, a match on both name and pin - continue
                     {
                         Console.WriteLine($"Log in successfull, welcome {output[0].first_name} {output[0].last_name}");
-                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()); //resets log in counter
-                        return output; //returns the list with user
+                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = '0' WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()); // Resets log in counter
+                        return output; // Returns the list with user
                     }
                     else
                     {
-                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = login_attempt + '1' WHERE first_name = '{firstName}'", new DynamicParameters()); //increments login counter for user
+                        cnn.Query<User>($"UPDATE bank_user SET login_attempt = login_attempt + '1' WHERE first_name = '{firstName}'", new DynamicParameters()); // Increments login counter for user
                         Console.WriteLine($"Login failed, incorrect name or pincode. Try again. \r\nFailed attempt(s): {outputTwo[0].login_attempt + 1}, account will be locked after 3 failed attempts."); //Information
-                        CheckLogin(); //Prompts the user to log in again
+                        CheckLogin(); // Prompts the user to log in again
                         return null;
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Your account is locked due to too many failed login attempts. Only system administrator can unlock it"); //If user has failed too many times, will be locked until login_attempts maunally resets to 0
+                    Console.WriteLine("Your account is locked due to too many failed login attempts. Only system administrator can unlock it"); // If user has failed too many times, will be locked until login_attempts maunally resets to 0
                     return null;
                 }
             }
@@ -115,7 +116,6 @@ namespace ProjektBankenSquid2
             {
 
                 var output = cnn.Query<User>("SELECT * FROM bank_user  ORDER BY id", new DynamicParameters());
-                //Console.WriteLine(output);
                 return output.ToList();
             }
             // Kopplar upp mot DB:n
@@ -129,16 +129,15 @@ namespace ProjektBankenSquid2
             {
 
                 var output = cnn.Query<User>("SELECT * FROM bank_account ORDER BY id", new DynamicParameters());
-                //Console.WriteLine(output);
                 return output.ToList();
             }
         }
 
-        //Lists all user accounts based of id
+        // Lists all user accounts based of id
         public static List<Account> UserAccount(List<User> user)
         {
 
-            //List<Account> activeAccounts = Database.UserAccount(activeUser[0].id);
+            // List<Account> activeAccounts = Database.UserAccount(activeUser[0].id);
 
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
@@ -147,7 +146,7 @@ namespace ProjektBankenSquid2
                 return output;
             }
         }
-        //Returns the information of someone with a specific account number. 
+        // Returns the information of someone with a specific account number. 
 
         public static void SeeAccountsAndBalance(List<Account> accounts)
         {
@@ -157,11 +156,11 @@ namespace ProjektBankenSquid2
             // sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
-            table.AddColumn("|");
-            table.AddColumn(new TableColumn("Account Name"));
-            table.AddColumn(new TableColumn("Account Balance"));
-            table.AddColumn(new TableColumn("Account Number"));
-            foreach (var item in accounts) //Lists accounts and balances with numbers
+            table.AddColumn("|").Centered();
+            table.AddColumn(new TableColumn("Account Name").Centered());
+            table.AddColumn(new TableColumn("Account Balance").Centered());
+            table.AddColumn(new TableColumn("Account Number").Centered());
+            foreach (var item in accounts) // Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
                 {
@@ -180,11 +179,11 @@ namespace ProjektBankenSquid2
                     default:
                         break;
                 }
-                //Adds one row to table per loop iteration
+                // Adds one row to table per loop iteration
                 table.AddRow($"{counter}", $"{item.name}", $"{item.balance} {currency}", $"{item.account_number}");
                 counter++;
             }
-            //Prints out the full table
+            // Prints out the full table
             AnsiConsole.Write(table);
             Console.WriteLine();
             Console.WriteLine("→ Press enter to return to main menu...");
@@ -197,11 +196,11 @@ namespace ProjektBankenSquid2
             // sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
-            table.AddColumn("|");
-            table.AddColumn(new TableColumn("Account Name"));
-            table.AddColumn(new TableColumn("Account Balance"));
-            table.AddColumn(new TableColumn("Account Number"));
-            foreach (var item in accounts) //Lists accounts and balances with numbers
+            table.AddColumn("|").Centered();
+            table.AddColumn(new TableColumn("Account Name").Centered());
+            table.AddColumn(new TableColumn("Account Balance").Centered());
+            table.AddColumn(new TableColumn("Account Number").Centered());
+            foreach (var item in accounts) // Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
                 {
@@ -220,22 +219,21 @@ namespace ProjektBankenSquid2
                     default:
                         break;
                 }
-                //Adds one row to table per loop iteration
+                // Adds one row to table per loop iteration
                 table.AddRow($"{counter}", $"{item.name}", $"{item.balance} {currency}", $"{item.account_number}");
                 counter++;
             }
 
-            //Prints out the full table
+            // Render the table to the console
             AnsiConsole.Write(table);
         }
 
-        //Transfers money between own accounts
+        // Transfers money between own accounts
         public static void Transfer(List<Account> activeAccounts)
         {
-            Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to transfer from: "); //From
             int choiceFrom = int.Parse(Console.ReadLine()) - 1;
-            //checks if user input is a valid account
+            // Checks if user input is a valid account
             if (choiceFrom + 1 <= 0)
             {
                 Console.WriteLine("---------------------------------------------");
@@ -250,7 +248,8 @@ namespace ProjektBankenSquid2
             }
             int idFrom = activeAccounts[choiceFrom].id;
             int idFromCurrency = activeAccounts[choiceFrom].currency_id;
-            //switch to put right currency in the API string 
+
+            // Switch to put right currency in the API string 
             string from = "";
             switch (idFromCurrency)
             {
@@ -273,7 +272,8 @@ namespace ProjektBankenSquid2
             Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to transfer to: "); //To
             int choiceTo = int.Parse(Console.ReadLine()) - 1;
-            //checks if user input is a valid account
+
+            // Checks if user input is a valid account
             if (choiceTo + 1 < 0)
             {
                 Console.WriteLine("---------------------------------------------");
@@ -288,7 +288,8 @@ namespace ProjektBankenSquid2
             }
             int idTo = activeAccounts[choiceTo].id;
             int idToCurrency = activeAccounts[choiceTo].currency_id;
-            //switch to put right currency in the API string 
+
+            // Switch to put right currency in the API string 
             string to = "";
             switch (idToCurrency)
             {
@@ -312,17 +313,17 @@ namespace ProjektBankenSquid2
             Console.WriteLine("How much money do you want to transfer? ");
             Console.Write($"{from}: ");
             string input = Console.ReadLine();
-            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+            // Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
             if (decimal.TryParse(input, out decimal amount))
             {
-                //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
+                // Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
                 if (amount > activeAccounts[choiceFrom].balance)
                 {
                     Console.WriteLine("---------------------------------------------");
                     Console.WriteLine("Error: Insufficient funds.");
                     Transfer(activeAccounts);
                 }
-                //Checks if user input is a negative number, if true gives error and starts the function from the start
+                // Checks if user input is a negative number, if true gives error and starts the function from the start
                 else if (amount <= 0)
                 {
                     Console.WriteLine("---------------------------------------------");
@@ -331,19 +332,19 @@ namespace ProjektBankenSquid2
                 }
                 else
                 {
-                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
 
-                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; // API string to calculate value of one currency to another 
                         using (var webClient = new System.Net.WebClient())
                         {
                             var json = webClient.DownloadString(URLString);
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); // Converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('Transfer between own accounts', '{activeAccounts[0].user_id}', '{idFrom}', '{idTo}', '{amount}' )", new DynamicParameters());
                             Console.WriteLine();
-                            Functions.LoadingTransfer();
-                            //Console.WriteLine("Transfered successfully.");
+                            Ascii.LoadingTransfer();
+                            
                         }
                     }
                 }
@@ -361,13 +362,14 @@ namespace ProjektBankenSquid2
 
         }
 
-        //Transfer funds, but to an account that is not logged in 
+        // Transfer funds, but to an account that is not logged in 
         public static void ExternalTransfer(List<Account> activeAccounts)
         {
             Console.WriteLine("---------------------------------------------");
-            Console.Write("Type the account you want to transfer from: "); //From
+            Console.Write("Type the account you want to transfer from: "); // From
             int choiceFrom = int.Parse(Console.ReadLine()) - 1;
-            //checks if user input is a valid account
+
+            // Checks if user input is a valid account
             if (choiceFrom + 1 <= 0)
             {
                 Console.WriteLine("Invalid account number");
@@ -384,7 +386,7 @@ namespace ProjektBankenSquid2
             int idFromCurrency = activeAccounts[choiceFrom].currency_id;
 
 
-            //switch to put right currency in the API string 
+            // Switch to put right currency in the API string 
             string from = "";
             switch (idFromCurrency)
             {
@@ -405,7 +407,7 @@ namespace ProjektBankenSquid2
             }
 
             Console.WriteLine("---------------------------------------------");
-            Console.Write("Enter another users account number, eg. 101: "); //Test to transfer to external user with known account_number - uses the same account as previous
+            Console.Write("Enter another users account number, eg. 101: "); // Test to transfer to external user with known account_number - uses the same account as previous
             int reciever = int.Parse(Console.ReadLine());
             bool accountNumberCheck = false;
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
@@ -415,19 +417,19 @@ namespace ProjektBankenSquid2
 
                 if (output.Count >= 1)
                 {
-                    Console.Write($"Enter amount: {from} "); //Test to transfer to external user with known account_number - uses the same account as previous
+                    Console.Write($"Enter amount: {from} "); // Test to transfer to external user with known account_number - uses the same account as previous
                     string input = Console.ReadLine();
-                    //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+                    // Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
                     if (decimal.TryParse(input, out decimal amount))
                     {
-                        //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
+                        // Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
                         if (amount > activeAccounts[choiceFrom].balance)
                         {
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Error: Insufficient funds.");
                             ExternalTransfer(activeAccounts);
                         }
-                        //Checks if user input is a negative number, if true gives error and starts the function from the start
+                        // Checks if user input is a negative number, if true gives error and starts the function from the start
                         else if (amount <= 0)
                         {
                             Console.WriteLine("---------------------------------------------");
@@ -435,13 +437,13 @@ namespace ProjektBankenSquid2
                             ExternalTransfer(activeAccounts);
                         }
 
-                        List<Account> accountX = Database.ForeignAccount(reciever); //Finds accounts with specific account number
-                        int idTo = accountX[0].account_number; //Sets reciever to the new account
+                        List<Account> accountX = Database.ForeignAccount(reciever); // Finds accounts with specific account number
+                        int idTo = accountX[0].account_number; // Sets reciever to the new account
                         Console.WriteLine($"Account {accountX[0].account_number}, {accountX[0].name}");
                         int idToCurrency = accountX[0].currency_id;
 
 
-                        //switch to put right currency in the API string 
+                        // Switch to put right currency in the API string 
                         string to = "";
                         switch (idToCurrency)
                         {
@@ -462,12 +464,12 @@ namespace ProjektBankenSquid2
                         }
 
 
-                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; //API string to calculate value of one currency to another 
+                        String URLString = $"https://v6.exchangerate-api.com/v6/32b26456dd41b6e1bc2befd1/pair/{from}/{to}/{amount}"; // API string to calculate value of one currency to another 
                         using (var webClient = new System.Net.WebClient())
                         {
                             var json = webClient.DownloadString(URLString);
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
-                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
+                            decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); // Converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('External transfer', '{activeAccounts[0].user_id}', '{idFrom}', '{accountX[0].id}', {amount})", new DynamicParameters());
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
@@ -497,10 +499,10 @@ namespace ProjektBankenSquid2
 
         public static void Withdraw(List<Account> activeAccounts)
         {
-            Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to withdraw money from: ");
             int userChoice = int.Parse(Console.ReadLine()) - 1;
-            //checks if user input is a valid account
+
+            // Checks if user input is a valid account
             if (userChoice + 1 <= 0)
             {
                 Console.WriteLine("---------------------------------------------");
@@ -515,7 +517,8 @@ namespace ProjektBankenSquid2
             }
             int id = activeAccounts[userChoice].id;
             int idCurrency = activeAccounts[userChoice].currency_id;
-            //switch to put right currency in the API string 
+
+            // Switch to put right currency in the API string 
             string currency = "";
             switch (idCurrency)
             {
@@ -538,17 +541,17 @@ namespace ProjektBankenSquid2
             Console.WriteLine("How much money do you want to withdraw?");
             Console.Write($"{currency}: ");
             string input = Console.ReadLine();
-            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+            // Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
             if (decimal.TryParse(input, out decimal amount))
             {
-                //Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
+                // Checks if the chosen account has enough money on it, if not gives error and starts the function from the start
                 if (amount > activeAccounts[userChoice].balance)
                 {
                     Console.WriteLine("---------------------------------------------");
                     Console.WriteLine("Error: Insufficient funds.");
                     Withdraw(activeAccounts);
                 }
-                //Checks if user input is a negative number, if true gives error and starts the function from the start
+                // Checks if user input is a negative number, if true gives error and starts the function from the start
                 else if (amount <= 0)
                 {
                     Console.WriteLine("---------------------------------------------");
@@ -557,7 +560,7 @@ namespace ProjektBankenSquid2
                 }
                 else
                 {
-                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, from_account_id, amount) VALUES ('Withdrawal from {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
                         Console.WriteLine("---------------------------------------------");
@@ -579,10 +582,9 @@ namespace ProjektBankenSquid2
 
         public static void Deposit(List<Account> activeAccounts)
         {
-            Console.WriteLine("---------------------------------------------");
             Console.Write("Type the account you want to deposit money into: ");
             int userChoice = int.Parse(Console.ReadLine()) - 1;
-            //checks if user input is a valid account
+            // Checks if user input is a valid account
             if (userChoice + 1 <= 0)
             {
                 Console.WriteLine("---------------------------------------------");
@@ -597,7 +599,7 @@ namespace ProjektBankenSquid2
             }
             int id = activeAccounts[userChoice].id;
             int idCurrency = activeAccounts[userChoice].currency_id;
-            //switch to put right currency in the API string 
+            // Switch to put right currency in the API string 
             string currency = "";
             switch (idCurrency)
             {
@@ -620,10 +622,10 @@ namespace ProjektBankenSquid2
             Console.WriteLine("How much money do you want to deposit?");
             Console.Write($"{currency}: ");
             string input = Console.ReadLine();
-            //Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
+            // Checks if user input is a number or a letter, runs rest of code if its able to be parsed to decimal otherwise it gives an error
             if (decimal.TryParse(input, out decimal amount))
             {
-                //Checks if user input is a negative number, if true gives error and starts the function from the start
+                // Checks if user input is a negative number, if true gives error and starts the function from the start
                 if (amount <= 0)
                 {
                     Console.WriteLine("---------------------------------------------");
@@ -632,7 +634,7 @@ namespace ProjektBankenSquid2
                 }
                 else
                 {
-                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
+                    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, to_account_id, amount) VALUES ('Deposit to {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
                         Console.WriteLine("---------------------------------------------");
@@ -724,47 +726,93 @@ namespace ProjektBankenSquid2
         //Create account
         public static void CreateAccount(List<User> users)
         {
-            Console.WriteLine("---------------------------------------------");
             var account = new Account();
-            Console.WriteLine("Choose account\n1.Salary account, 2.Savings account");
-            string chooseaccount = Console.ReadLine();
-            if (chooseaccount == "1")
+            var accountOption = AnsiConsole.Prompt(
+             new SelectionPrompt<string>()
+                .Title("What type of account do you want to open?")
+                .PageSize(5)
+                .MoreChoicesText("[grey](Use arrow keys to move up and down)[/]")
+                .AddChoices(new[] {
+                    "Checking Account", "Salary", "Certificate of Deposit Account",
+                    "Money Market Account", "Savings Account",
+                }));
+            switch (accountOption)
             {
+                case "Checking Account":
+                    account.name = "Checking Account";
+                    account.interest_rate = 0;
+                    break;
+                case "Salary":
+                    account.name = "Salary";
+                    account.interest_rate = 0;
+                    break;
+                case "Certificate of Deposit Account":
+                    account.name = "CD";
+                    account.interest_rate = 0;
+                    break;
+                case "Money Market Account":
+                    account.name = "MMA";
+                    account.interest_rate = 0;
+                    break;
+                case "Savings Account":
+                    account.name = "Savings";
+                    account.interest_rate = 2.5m;
+                    break;
+                default:
+                    Console.WriteLine("Error");
+                    CreateAccount(users);
+                    break;
 
-                account.name = "Salary";
-                account.interest_rate = 0;
             }
-            else if (chooseaccount == "2")
-            {
-                account.name = "Savings";
-                account.interest_rate = 2.5m;
-            }
-
             account.user_id = users[0].id;
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine("Select currency\n1.SEK, 2.USD, 3.EUR, 4.GBP");
-            string selectcurrency = Console.ReadLine();
-            if (selectcurrency == "1")
+            
+            var currencyOption = AnsiConsole.Prompt(
+             new SelectionPrompt<string>()
+                .Title("What currency do you want the account to be in?")
+                .PageSize(4)
+                .MoreChoicesText("[grey](Use arrow keys to move up and down)[/]")
+                .AddChoices(new[] {
+                    "SEK", "USD", "EUR",
+                    "GBP",
+                }));
+            switch (currencyOption)
             {
-                account.currency_id = 1;
-            }
-            else if (selectcurrency == "2")
-            {
-                account.currency_id = 2;
-            }
-            else if (selectcurrency == "3")
-            {
-                account.currency_id = 3;
-            }
-            else if (selectcurrency == "4")
-            {
-                account.currency_id = 4;
-            }
-            account.balance = 0;
+                case "SEK":
+                    account.currency_id = 1;
+                    break;
+                case "USD":
+                    account.currency_id = 2;
+                    break;
+                case "EUR":
+                    account.currency_id = 3;
+                    break;
+                case "GBP":
+                    account.currency_id = 4;
+                    break;
+                default:
+                    Console.WriteLine("Error");
+                    CreateAccount(users);
+                    break;
 
+            }
+           
+            account.balance = 0;
             Random rnd = new Random();
-            int account_number = rnd.Next(1000);
-            //Console.WriteLine("Select a number for the account");
+            int account_number = rnd.Next(10000);
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+                var output = cnn.Query<Account>("SELECT account_number FROM bank_account", new DynamicParameters()).ToList();
+                
+                foreach (var item in output)
+                {
+                    if (item.account_number == account_number)
+                    {
+                        account_number += 1;
+                    }
+                }
+            }
+            
+            
             account.account_number = account_number;
 
 
@@ -821,36 +869,34 @@ namespace ProjektBankenSquid2
                 Console.WriteLine();
                 CreateUser();
             }
+            var accountTypeOption = AnsiConsole.Prompt(
+             new SelectionPrompt<string>()
+                .Title("What type of account is it?")
+                .PageSize(3)
+                .MoreChoicesText("[grey](Use arrow keys to move up and down)[/]")
+                .AddChoices(new[] {
+                    "Administrator", "ClientAdmin", "Client",
+                }));
+            switch (accountTypeOption)
+            {
+                case "Administrator":
+                    user.role_id = 1;
+                    break;
+                case "ClientAdmin":
+                    user.role_id = 3;
+                    break;
+                case "Client":
+                    user.role_id = 2;
+                    break;
+                default:
+                    Console.WriteLine("Error");
+                    CreateUser();
+                    break;
 
-            //sets the role of new user
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine("What type of account is it?");
-            Console.WriteLine("  1. Administrator");
-            Console.WriteLine("  2. Client");
-            Console.WriteLine("  3. ClientAdmin");
-            string typeOfAccount = Console.ReadLine();
-            if (typeOfAccount == "1")
-            {
-                user.role_id = 1;
             }
-            else if (typeOfAccount == "2")
-            {
-                user.role_id = 2;
-            }
-            else if (typeOfAccount == "3")
-            {
-                user.role_id = 3;
-            }
-            else
-            {
-                Console.WriteLine("---------------------------------------------");
-                Console.WriteLine("Error: Invalid option");
-                CreateUser();
-            }
-
-
+           
             user.login_attempt = 0;
-            //adds new user object in to database 
+            // Adds new user object in to database 
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 cnn.Execute("insert into bank_user (first_name, last_name, pin_code, role_id, login_attempt) values (@first_name, @last_name, @pin_code, @role_id, @login_attempt)", user);
@@ -901,18 +947,30 @@ namespace ProjektBankenSquid2
        
         public static List<Transaction> GetTransactionByUser(List<Account> accounts)
         {
-
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
 
                 var output = cnn.Query<Transaction>($"SELECT * FROM bank_transaction where user_id='{accounts[0].user_id}'", new DynamicParameters());
+                
+                // Create a new table
+                var table = new Table();
 
+                // Add some columns
+                table.AddColumn("Account Name").Centered();
+                table.AddColumn(new TableColumn("Sending Account ID").Centered());
+                table.AddColumn(new TableColumn("Receiving Account ID").Centered());
+                table.AddColumn(new TableColumn("Amount").Centered());
+                table.AddColumn(new TableColumn("Date").Centered());
                 foreach (var item in output)
                 {
-                    Console.WriteLine($"{item.name} | From account id: {item.from_account_id} | To account id: {item.to_account_id} | Amount: {item.amount} | Date: {item.transaction_time}");
+                    // Adds one row to table per loop iteration
+                    table.AddRow($"{item.name}", $"{item.from_account_id}", $"{item.to_account_id}", $"{item.amount}", $"{item.transaction_time}");
                 }
 
-                Console.WriteLine("---------------------------------------------");
+                // Render the table to the console
+                AnsiConsole.Write(table);
+
+                
                 Console.WriteLine();
                 Console.WriteLine();
                 Console.WriteLine("→ Press enter to return to main menu...");
