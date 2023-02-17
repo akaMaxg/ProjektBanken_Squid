@@ -1,4 +1,6 @@
 using Spectre.Console;
+using System.Runtime.Intrinsics.X86;
+using System.Transactions;
 
 namespace ProjektBankenSquid2
 {
@@ -161,10 +163,10 @@ namespace ProjektBankenSquid2
                         .MoreChoicesText("[grey](Move up and down using arrow keys)[/]")
                         .AddChoices(new[] {
                          "View your bank accounts", "Transfer between own accounts", "Transfer to other account",
-                         "Deposit money", "Withdraw money", "Open new account", "Unlock user", "Create new user account", "Log out",
-
+                            "Deposit money", "Withdraw money", "Open new account", "Unlock user", "Create new user account","See your transactions", 
+                            "Log out",
                         }));
-                    switch (selectedOption)
+                switch (selectedOption)
                     {
                         case "View your bank accounts":
                             Console.WriteLine("---------------------------------------------");
@@ -226,6 +228,14 @@ namespace ProjektBankenSquid2
                             Database.UnlockUser(activeUser);
                             Console.ReadLine();
                             break;
+
+                        case "See your transactions":
+                        Console.WriteLine("---------------------------------------------");
+                        Console.WriteLine("See your transaction selected");
+                        Database.GetTransactionByUser(activeAccount);
+                        Console.ReadLine();
+                            break;
+
                         case "Log out":
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine("Log out selected");
@@ -252,7 +262,7 @@ namespace ProjektBankenSquid2
                     .MoreChoicesText("[grey](Move up and down using arrow keys)[/]")
                     .AddChoices(new[] {
                          "View your bank accounts", "Transfer between own accounts", "Transfer to other account",
-                         "Deposit money", "Withdraw money", "Open new account", "Log out",
+                         "Deposit money", "Withdraw money", "Open new account", "See your transactions", "Log out",
 
                     }));
                 switch (selectedOption)
@@ -300,6 +310,13 @@ namespace ProjektBankenSquid2
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Create account selected");
                         Database.CreateAccount(activeUser);
+                        Console.ReadLine();
+                        break;
+
+                    case "See your transactions":
+                        Console.WriteLine("---------------------------------------------");
+                        Console.WriteLine("See your transactions selected");
+                        Database.GetTransactionByUser(activeAccount);
                         Console.ReadLine();
                         break;
                     case "Log out":

@@ -340,7 +340,7 @@ namespace ProjektBankenSquid2
                             var json = webClient.DownloadString(URLString);
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                            var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'", new DynamicParameters());
+                            var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('Transfer between own accounts', '{activeAccounts[0].user_id}', '{idFrom}', '{idTo}', '{amount}' )", new DynamicParameters());
                             Console.WriteLine();
                             Functions.LoadingTransfer();
                             //Console.WriteLine("Transfered successfully.");
@@ -468,7 +468,7 @@ namespace ProjektBankenSquid2
                             var json = webClient.DownloadString(URLString);
                             API_Obj_Convert rate = JsonConvert.DeserializeObject<API_Obj_Convert>(json);
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); //converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
-                            var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'", new DynamicParameters());
+                            var output2 = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + '{amount}' WHERE bank_account.account_number = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('External transfer', '{activeAccounts[0].user_id}', '{idFrom}', '{accountX[0].id}', {amount})", new DynamicParameters());
                             Console.WriteLine("---------------------------------------------");
                             Console.WriteLine($"Successfully transfered {amount} from {activeAccounts[choiceFrom].account_number} to {idTo}");
                         }
@@ -559,7 +559,7 @@ namespace ProjektBankenSquid2
                 {
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
-                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, from_account_id, amount) VALUES ('Withdrawal from {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully withdrawn.");
                     }
@@ -634,7 +634,7 @@ namespace ProjektBankenSquid2
                 {
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) //db connection string
                     {
-                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'", new DynamicParameters());
+                        var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, to_account_id, amount) VALUES ('Deposit to {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully deposited.");
                     }
@@ -897,5 +897,34 @@ namespace ProjektBankenSquid2
             Console.WriteLine();
             Console.WriteLine("→ Press enter to return to main menu...");
         }
+
+       
+        public static List<Transaction> GetTransactionByUser(List<Account> accounts)
+        {
+
+            using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
+            {
+
+                var output = cnn.Query<Transaction>($"SELECT * FROM bank_transaction where user_id='{accounts[0].user_id}'", new DynamicParameters());
+
+                foreach (var item in output)
+                {
+                    Console.WriteLine($"{item.name} | From account id: {item.from_account_id} | To account id: {item.to_account_id} | Amount: {item.amount} | Date: {item.transaction_time}");
+                }
+
+                Console.WriteLine("---------------------------------------------");
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine("→ Press enter to return to main menu...");
+
+                return output.ToList();
+
+              
+            }
+
+        }
+
+       
+
     }
 }
