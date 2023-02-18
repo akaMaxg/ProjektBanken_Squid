@@ -47,9 +47,9 @@ Ensure that the key for the connection string is added to the app.config
 
 ## Usage
 The following users with various roles can be used to try the program
-Abbe - 4763
-Max - 7777
-????
+Admin: Abbe - 4763
+Client: Max - 7777
+Client Admin: Frank - 4321
 Then follow the in-application prompts.
 
 ## Contributing
