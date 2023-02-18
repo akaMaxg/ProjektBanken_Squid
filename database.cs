@@ -20,11 +20,33 @@ namespace ProjektBankenSquid2
         {
             return ConfigurationManager.ConnectionStrings[id].ConnectionString;
         }
+        public static void RunIntro()
+        {
+            bool introScreen = true;
+            Ascii.HentaiSquid();
+            while (introScreen == true)
+            {
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                switch (keyInfo.Key)
+                {
 
+                    case ConsoleKey.Enter:
+                        introScreen = false;
+                        Console.Clear();
+                        break;
+                    case ConsoleKey.Spacebar:
+                        introScreen = false;
+                        Console.Clear();
+                        break;
+                }
+            }
+        }
         public static void RunProgram()
         {
+            Rates.ImportRates();
+          
             Ascii.AsciiSquidBank();
-            List<User> users = Database.LoadBankUsers();
+            List<User> users = LoadBankUsers();
             var table = new Table();
             // Sets tables border
             table.Border(TableBorder.Ascii);
@@ -37,42 +59,67 @@ namespace ProjektBankenSquid2
             }
             // Render the table to the console
             AnsiConsole.Write(table);
-            List<User> activeUser = Database.CheckLogin();
-            if (activeUser[0].role_id == 1)
-            {
-                Menus.AdminMenu(activeUser);
+
+            // Selection menu for Login or Exit application
+            var selectedOption = AnsiConsole.Prompt(
+              new SelectionPrompt<string>()
+                  .Title("Select desired task:")
+                  .PageSize(3)
+                  .MoreChoicesText("[grey](Move up and down using arrow keys)[/]")
+                  .AddChoices(new[] {
+                          "Login", "Exit application",
+
+                  }));
+            switch (selectedOption)
+            {   
+                // Starts the login process 
+                case "Login":
+                    List<User> activeUser = CheckLogin();
+                    while (activeUser.Count == 0)
+                    {
+                        activeUser = CheckLogin();
+                    }
+                    if (activeUser[0].role_id == 1)
+                    {
+                        Menus.AdminMenu(activeUser);
+                    }
+                    else if (activeUser[0].role_id == 2)
+                    {
+                        Menus.Menu(activeUser);
+                    }
+                    else
+                    {
+                        Menus.ClientAdminMenu(activeUser);
+                    }
+                    break;
+                // Exits the application
+                case "Exit application":
+                    Environment.Exit(0);
+                    break;
+                
             }
-            else if (activeUser[0].role_id == 2)
-            {
-                Menus.Menu(activeUser);
-            }
-            else
-            {
-                Menus.ClientAdminMenu(activeUser);
-            }
+
         }
         // Function to hide what the user types in when entering pincode
         public static string PassPrompt()
         {
             return AnsiConsole.Prompt(
-                new TextPrompt<string>("Enter [green]pincode[/]:")
+                new TextPrompt<string>("Enter 4 number [green]pincode[/]:")
                 .PromptStyle("red")
                 .Secret());
         }
         public static List<User> CheckLogin()
         {
+           
             using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
             {
                 Console.Write("Enter name: ");
                 string firstName = Console.ReadLine();
                 string pinCode = PassPrompt();
 
-
-
-
                 var output = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}' AND pin_code = '{pinCode}'", new DynamicParameters()).ToList();
                 var outputTwo = cnn.Query<User>($"SELECT * FROM bank_user WHERE first_name = '{firstName}'", new DynamicParameters()).ToList(); // Sets user for wrong code increment
-                if (outputTwo[0].login_attempt <= 3) // If a user with matchning name exists, check so attempts <=3
+                if (outputTwo[0].login_attempt < 3) // If a user with matchning name exists, check so attempts <=3
                 {
                     if (output.Any()) // If output returns anything, a match on both name and pin - continue
                     {
@@ -84,20 +131,30 @@ namespace ProjektBankenSquid2
                     {
                         cnn.Query<User>($"UPDATE bank_user SET login_attempt = login_attempt + '1' WHERE first_name = '{firstName}'", new DynamicParameters()); // Increments login counter for user
                         Console.WriteLine($"Login failed, incorrect name or pincode. Try again. \r\nFailed attempt(s): {outputTwo[0].login_attempt + 1}, account will be locked after 3 failed attempts."); //Information
-                        CheckLogin(); // Prompts the user to log in again
-                        return null;
+                        // Sets output to 0
+                        output.Clear();
+                        return output;
                     }
+                }
+                else if (outputTwo[0].login_attempt == 3)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine("Your account is locked due to too many failed login attempts. Contact an administrator to unlock it."); // If user has failed too many times, will be locked until login_attempts maunally resets to 0
+                    Console.WriteLine("---------------------------------------------");
+                    // Sets output to 0
+                    output.Clear();
+                    return output;
                 }
                 else
                 {
-                    Console.WriteLine("Your account is locked due to too many failed login attempts. Only system administrator can unlock it"); // If user has failed too many times, will be locked until login_attempts maunally resets to 0
-                    return null;
+                    output.Clear();
+                    return output;
                 }
             }
 
-            // Kopplar upp mot DB:n
-            // läser ut en användare med specifikt namn och pinkod
-            // Returnerar en lista med en träff
+            // Connects to the DB
+            // Reads a user with a specific name and pincode
+            // Returns a list if it gets a hit
         }
 
         public static void SaveBankUser(User user)
@@ -118,9 +175,9 @@ namespace ProjektBankenSquid2
                 var output = cnn.Query<User>("SELECT * FROM bank_user  ORDER BY id", new DynamicParameters());
                 return output.ToList();
             }
-            // Kopplar upp mot DB:n
-            // läser ut alla Users
-            // Returnerar en lista av Users
+            // Connects to the DB
+            // Reads all Users
+            // Returns a list of Users
         }
 
         public static List<User> LoadBankAccounts()
@@ -153,7 +210,7 @@ namespace ProjektBankenSquid2
             int counter = 1;
             string currency = "";
             var table = new Table();
-            // sets tables border
+            // Sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
             table.AddColumn("|").Centered();

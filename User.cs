@@ -12,20 +12,5 @@ namespace ProjektBankenSquid2
         public int role_id { get; set; }    
         public int login_attempt { get; set; }
     }
-    public class MockUser
-    {
-        public int mockid { get; set; }
-        public string mockfirst_name { get; set; }
-        public string mocklast_name { get; set; }
-        public string mockpin_code { get; set; }
-
-        //Konstruktor
-        public MockUser(string firstName, string lastName, string pinCode)
-        {
-            mockfirst_name = firstName;
-            mocklast_name = lastName;
-            mockpin_code = pinCode;
-        }
-    }
     
 }
