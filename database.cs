@@ -694,6 +694,21 @@ namespace ProjektBankenSquid2
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, to_account_id, amount) VALUES ('Deposit to {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
+
+                        if (activeAccounts[userChoice].name == "Savings")
+                        {
+                            decimal interestRate = activeAccounts[userChoice].interest_rate;
+                            decimal initialBalance = amount;
+                            decimal currentbalance = initialBalance;
+
+
+                            for (int year = 1; year <= 3; year++)
+                            {
+                                decimal interest = currentbalance * interestRate;
+                                currentbalance += interest;
+                                Console.WriteLine($"Balance {currentbalance} and interest {interest} for year {year}");
+                            }
+                        }
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully deposited.");
                     }
