@@ -24,7 +24,7 @@ namespace ProjektBankenSquid2
         public static void RunIntro()
         {
             bool introScreen = true;
-            Ascii.HentaiSquid();
+            Ascii.SquidImg();
             while (introScreen == true)
             {
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
@@ -42,11 +42,9 @@ namespace ProjektBankenSquid2
                 }
             }
         }
-        public static void RunProgram()
+        // Prints a table with User Info
+        public static void ListBankUserInfo()
         {
-            Rates.ImportRates();
-          
-            Ascii.AsciiSquidBank();
             List<User> users = LoadBankUsers();
             var table = new Table();
             // Sets tables border
@@ -61,6 +59,15 @@ namespace ProjektBankenSquid2
             // Render the table to the console
             AnsiConsole.Write(table);
 
+        }
+        public static void RunProgram()
+        {
+            // Function to update exchange rates in DB
+            Rates.ImportRates();
+            //ListBankUserInfo();
+            Ascii.AsciiSquidBank();
+            List<User> users = LoadBankUsers();
+     
             // Selection menu for Login or Exit application
             var selectedOption = AnsiConsole.Prompt(
               new SelectionPrompt<string>()
@@ -214,10 +221,10 @@ namespace ProjektBankenSquid2
             // Sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
-            table.AddColumn("|").Centered();
-            table.AddColumn(new TableColumn("Account Name").Centered());
-            table.AddColumn(new TableColumn("Account Balance").Centered());
-            table.AddColumn(new TableColumn("Account Number").Centered());
+            table.AddColumn("|");
+            table.AddColumn(new TableColumn("Account Name"));
+            table.AddColumn(new TableColumn("Account Balance"));
+            table.AddColumn(new TableColumn("Account Number"));
             foreach (var item in accounts) // Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
@@ -254,10 +261,10 @@ namespace ProjektBankenSquid2
             // sets tables border
             table.Border(TableBorder.Ascii);
             // Adds columns
-            table.AddColumn("|").Centered();
-            table.AddColumn(new TableColumn("Account Name").Centered());
-            table.AddColumn(new TableColumn("Account Balance").Centered());
-            table.AddColumn(new TableColumn("Account Number").Centered());
+            table.AddColumn("|");
+            table.AddColumn(new TableColumn("Account Name"));
+            table.AddColumn(new TableColumn("Account Balance"));
+            table.AddColumn(new TableColumn("Account Number"));
             foreach (var item in accounts) // Lists accounts and balances with numbers
             {
                 switch (item.currency_id)
@@ -401,25 +408,27 @@ namespace ProjektBankenSquid2
                             decimal transfer = Convert.ToDecimal($"{rate.conversion_result}"); // Converting string recieved from API to double since it gives asnwer with a comma when we need a dot.
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('Transfer between own accounts', '{activeAccounts[0].user_id}', '{idFrom}', '{idTo}', '{amount}' )", new DynamicParameters());
                             Console.WriteLine();
-                            Ascii.LoadingTransfer();
-
-
-                            
                         }
 
+                        Console.WriteLine();
+                        Console.WriteLine($"Successfully transfered {amount} {from} from {activeAccounts[choiceFrom].account_number} to {activeAccounts[choiceTo].account_number}");
+
+                        // Shows the growth of a savings account over time
                         if (activeAccounts[choiceTo].name == "Savings")
                         {
+                            Console.WriteLine();
+                            Console.WriteLine("Estimated growth of account: ");
                             decimal interestRate = 0.02m;
                             decimal initialBalance = activeAccounts[choiceTo].balance;
-                            //decimal currentbalance = amount;
-
-                            decimal interest = 0m;
                             decimal yearOne = Math.Truncate(initialBalance + amount + ((initialBalance + amount) * interestRate));
                             decimal yearTwo = Math.Truncate(yearOne + yearOne * interestRate);
                             decimal yearThree = Math.Truncate(yearTwo + yearTwo * interestRate);
 
 
+                            // Creates a table
                             var table = new Table();
+                            // Sets tables border
+                            table.Border(TableBorder.Ascii);
                             table.AddColumn("Balance").Centered();
                             table.AddColumn(new TableColumn("Interest").Centered());
                             table.AddColumn(new TableColumn("Year").Centered());
@@ -428,8 +437,11 @@ namespace ProjektBankenSquid2
                             table.AddRow($"{yearTwo}", "2%", "2");
                             table.AddRow($"{yearThree}", "2%", "3");
 
+
+                            // Renders table in the console
                             AnsiConsole.Write(table);
                         }
+
                     }
                 }
             }
@@ -720,26 +732,28 @@ namespace ProjektBankenSquid2
                 {
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
-
-
-
+                        Console.WriteLine();
+                        Console.WriteLine("---------------------------------------------");
+                        Console.WriteLine("Money successfully deposited.");
+                        Console.WriteLine("---------------------------------------------");
 
                         if (activeAccounts[userChoice].name == "Savings")
                         {
+                            Console.WriteLine();
+                            Console.WriteLine("Estimated growth of account: ");
                             decimal interestRate = 0.02m;
                             decimal initialBalance = activeAccounts[userChoice].balance;
-                            //decimal currentbalance = amount;
-
-                            decimal interest = 0m;
                             decimal yearOne = Math.Truncate(initialBalance + amount + ((initialBalance + amount) * interestRate));
                             decimal yearTwo = Math.Truncate(yearOne + yearOne * interestRate);
                             decimal yearThree = Math.Truncate(yearTwo + yearTwo * interestRate);
 
-
+                            
                             var table = new Table();
-                            table.AddColumn("Balance").Centered();
-                            table.AddColumn(new TableColumn("Interest").Centered());
-                            table.AddColumn(new TableColumn("Year").Centered());
+                            // Sets tables border
+                            table.Border(TableBorder.Ascii);
+                            table.AddColumn("Balance");
+                            table.AddColumn(new TableColumn("Interest"));
+                            table.AddColumn(new TableColumn("Year"));
 
                             table.AddRow($"{yearOne}", "2%", "1");
                             table.AddRow($"{yearTwo}", "2%", "2");
@@ -748,8 +762,7 @@ namespace ProjektBankenSquid2
                             AnsiConsole.Write(table);
                         }
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, to_account_id, amount) VALUES ('Deposit to {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
-                        Console.WriteLine("---------------------------------------------");
-                        Console.WriteLine("Money successfully deposited.");
+                        
                     }
                 }
             }
@@ -759,7 +772,7 @@ namespace ProjektBankenSquid2
                 Console.WriteLine("Error: Input must be a number.");
                 Deposit(activeAccounts);
             }
-            Console.WriteLine("---------------------------------------------");
+            
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("→ Press enter to return to main menu...");
@@ -775,64 +788,6 @@ namespace ProjektBankenSquid2
                 return output.ToList();
             }
         }
-
-        //Checks if user is allowed to take a loan based on total savings in bank and returns a bool
-
-        //public static bool SetLoanPermission(List<Account> activeAccount, decimal loanAmount)
-        //{
-
-        //    bool loanPermission;
-        //    loanAmount *= 5;
-
-        //    using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-        //    {
-        //        var output = Convert.ToDecimal(cnn.Query<Account>($"SELECT SUM(balance) FROM bank_account", new DynamicParameters()));
-
-        //        if (output < loanAmount + 1)
-        //        {
-        //            loanPermission = false;
-        //        }
-        //        else
-        //        {
-        //            loanPermission = true;
-        //        }
-        //        return loanPermission;
-        //    }
-
-        //}
-
-        //Makes the actual loan transfer of requested amount to requested account
-
-        //public static void Loan(List<Account> activeAccount)
-        //{
-        //    Console.WriteLine("---------------------------------------------");
-        //    Console.WriteLine();
-        //    Console.WriteLine("The allowed amount for a loan is five times the amount of your total savings in this bank");
-        //    Console.WriteLine();
-        //    Console.WriteLine("How much money would you like to loan?");
-        //    decimal loanAmount = decimal.Parse(Console.ReadLine());
-        //    bool loanPermission = SetLoanPermission(activeAccount, loanAmount);
-        //    if (loanPermission)
-        //    {
-        //        decimal interest = 0.0570 * loanAmount;
-        //        Console.WriteLine($"The interest rate for the requested loan is {interest}");
-        //        ListUserAccounts(activeAccount);  
-        //        Console.WriteLine("Please enter preferred receiver account");
-        //        int receiverAccount = int.Parse(Console.ReadLine());   
-        //        using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString()))
-        //        {
-        //                var output = cnn.Query<Account>($"UPDATE bank_account SET balance = balance + '{loanAmount}' " +
-        //                    $"WHERE bank_account.id = '{receiverAccount}'", new DynamicParameters());
-        //        }
-        //        Console.WriteLine($"You have successfully loaned {loanAmount}");
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("Unfortunately you are not eligible for a loan in this bank, since the total amount of " +
-        //            "your savings fail to reach the required threshold");
-        //    }
-        //}
-
 
         //Create account
         public static void CreateAccount(List<User> users)
@@ -1067,11 +1022,11 @@ namespace ProjektBankenSquid2
                 var table = new Table();
 
                 // Add some columns
-                table.AddColumn("Account Name").Centered();
-                table.AddColumn(new TableColumn("Sending Account ID").Centered());
-                table.AddColumn(new TableColumn("Receiving Account ID").Centered());
-                table.AddColumn(new TableColumn("Amount").Centered());
-                table.AddColumn(new TableColumn("Date").Centered());
+                table.AddColumn("Account Name");
+                table.AddColumn(new TableColumn("Sending Account ID"));
+                table.AddColumn(new TableColumn("Receiving Account ID"));
+                table.AddColumn(new TableColumn("Amount"));
+                table.AddColumn(new TableColumn("Date"));
                 foreach (var item in output)
                 {
                     // Adds one row to table per loop iteration
