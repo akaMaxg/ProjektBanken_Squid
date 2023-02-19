@@ -35,7 +35,7 @@ This class hosts the object Accounts along with the properties that are derived 
 ### Additional functionality
 -> Hidden pincodes  
 -> Exception handling  
--> Tables 
+-> Tables  
 -> Loading bars  
 -> Locking out users  
 
