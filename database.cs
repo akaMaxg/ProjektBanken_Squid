@@ -24,7 +24,7 @@ namespace ProjektBankenSquid2
         public static void RunIntro()
         {
             bool introScreen = true;
-            Ascii.SquidImg();
+            //Ascii.SquidImg();
             while (introScreen == true)
             {
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);

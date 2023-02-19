@@ -5,18 +5,18 @@ namespace ProjektBankenSquid2
     public class Ascii
     {
         //prints out an img of a squid
-        public static void SquidImg()
-        {
-            var image = new CanvasImage("squid2.png");
+        //public static void SquidImg()
+        //{
+        //    var image = new CanvasImage("squid2.png");
 
-            // Set the max width of the image.
-            // If no max width is set, the image will take
-            // up as much space as there is available.
-            image.MaxWidth(64);
+        //    // Set the max width of the image.
+        //    // If no max width is set, the image will take
+        //    // up as much space as there is available.
+        //    image.MaxWidth(64);
 
-            // Render the image to the console
-            AnsiConsole.Write(image);
-        }
+        //    // Render the image to the console
+        //    AnsiConsole.Write(image);
+        //}
         //Function to print out ascii art of Login text using Spectre.Console
         public static void AsciiSquidBank()
         {

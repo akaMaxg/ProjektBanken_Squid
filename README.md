@@ -50,7 +50,7 @@ This class hosts the object Accounts along with the properties that are derived 
 ## Usage
 The following users with various roles can be used to try the program  
 Admin: Abbe - 4763  
-Client: Max - 7777  
+Client: Nalle - 9999  
 Client Admin: Frank - 4321  
 Then follow the in-application prompts.
 
