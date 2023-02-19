@@ -7,7 +7,7 @@ namespace ProjektBankenSquid2
     {
         static void Main(string[] args)
         {
-            //Database.RunIntro();
+            Database.RunIntro();
             Database.RunProgram();
         }
     }
