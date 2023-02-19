@@ -5,7 +5,7 @@ namespace ProjektBankenSquid2
     public class Ascii
     {
         //prints out an img of a squid
-        public static void HentaiSquid()
+        public static void SquidImg()
         {
             var image = new CanvasImage("squid2.png");
 
@@ -20,9 +20,9 @@ namespace ProjektBankenSquid2
         //Function to print out ascii art of Login text using Spectre.Console
         public static void AsciiSquidBank()
         {
-            var font = FigletFont.Load("starwars.flf");
+            
             AnsiConsole.Write(
-            new FigletText(font, "Squid Bank")
+            new FigletText("Squid Bank")
                 //.LeftJustified()
                 .Color(Color.SteelBlue1));
 
@@ -133,28 +133,6 @@ namespace ProjektBankenSquid2
 
                    }
                });
-        }
-        //Animation of a loading bar made for transfers
-        public static void LoadingTransfer()
-        {
-            AnsiConsole.Progress()
-                   .StartAsync(async ctx =>
-                   {
-                       // Define tasks
-                       var task1 = ctx.AddTask("[green]Transfering[/]");
-
-
-                       while (!ctx.IsFinished)
-                       {
-                           // Simulate some work
-                           await Task.Delay(150);
-
-                           // Increment
-                           task1.Increment(10.5);
-
-                       }
-                       Console.WriteLine("  Transfer successfully completed");
-                   });
-        }
+        }  
     }
 }
