@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Principal;
 
 namespace ProjektBankenSquid2
@@ -401,7 +402,33 @@ namespace ProjektBankenSquid2
                             var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance - '{amount}' WHERE bank_account.id = '{idFrom}'; UPDATE bank_account SET balance = balance + {transfer} WHERE bank_account.id = '{idTo}'; INSERT INTO bank_transaction (name, user_id, from_account_id, to_account_id, amount) VALUES ('Transfer between own accounts', '{activeAccounts[0].user_id}', '{idFrom}', '{idTo}', '{amount}' )", new DynamicParameters());
                             Console.WriteLine();
                             Ascii.LoadingTransfer();
+
+
                             
+                        }
+
+                        if (activeAccounts[choiceTo].name == "Savings")
+                        {
+                            decimal interestRate = 0.02m;
+                            decimal initialBalance = activeAccounts[choiceTo].balance;
+                            //decimal currentbalance = amount;
+
+                            decimal interest = 0m;
+                            decimal yearOne = Math.Truncate(initialBalance + amount + ((initialBalance + amount) * interestRate));
+                            decimal yearTwo = Math.Truncate(yearOne + yearOne * interestRate);
+                            decimal yearThree = Math.Truncate(yearTwo + yearTwo * interestRate);
+
+
+                            var table = new Table();
+                            table.AddColumn("Balance").Centered();
+                            table.AddColumn(new TableColumn("Interest").Centered());
+                            table.AddColumn(new TableColumn("Year").Centered());
+
+                            table.AddRow($"{yearOne}", "2%", "1");
+                            table.AddRow($"{yearTwo}", "2%", "2");
+                            table.AddRow($"{yearThree}", "2%", "3");
+
+                            AnsiConsole.Write(table);
                         }
                     }
                 }
@@ -693,6 +720,33 @@ namespace ProjektBankenSquid2
                 {
                     using (IDbConnection cnn = new NpgsqlConnection(LoadConnectionString())) // db connection string
                     {
+
+
+
+
+                        if (activeAccounts[userChoice].name == "Savings")
+                        {
+                            decimal interestRate = 0.02m;
+                            decimal initialBalance = activeAccounts[userChoice].balance;
+                            //decimal currentbalance = amount;
+
+                            decimal interest = 0m;
+                            decimal yearOne = Math.Truncate(initialBalance + amount + ((initialBalance + amount) * interestRate));
+                            decimal yearTwo = Math.Truncate(yearOne + yearOne * interestRate);
+                            decimal yearThree = Math.Truncate(yearTwo + yearTwo * interestRate);
+
+
+                            var table = new Table();
+                            table.AddColumn("Balance").Centered();
+                            table.AddColumn(new TableColumn("Interest").Centered());
+                            table.AddColumn(new TableColumn("Year").Centered());
+
+                            table.AddRow($"{yearOne}", "2%", "1");
+                            table.AddRow($"{yearTwo}", "2%", "2");
+                            table.AddRow($"{yearThree}", "2%", "3");
+
+                            AnsiConsole.Write(table);
+                        }
                         var output = cnn.Query<User>($"UPDATE bank_account SET balance = balance + {amount} WHERE bank_account.id = '{id}'; INSERT INTO bank_transaction (name, user_id, to_account_id, amount) VALUES ('Deposit to {activeAccounts[userChoice].name}', '{activeAccounts[0].user_id}', '{id}', '{amount}')", new DynamicParameters());
                         Console.WriteLine("---------------------------------------------");
                         Console.WriteLine("Money successfully deposited.");
