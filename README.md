@@ -41,10 +41,11 @@ This class hosts the object Accounts along with the properties that are derived 
 
 ## To run program
 1.  Download or clone the project files from the Git repository.  
-2.  Open the solution or project in an C# IDE.   
+2.  Ensure that the required filed are downloaded from **Trello** administrative column and then placed in appropriate folders.  
+3.  Open the solution or project in an C# IDE.  
 3.  Build the project by pressing F6 or navigating to Build > Build Solution.    
 
---Ensure that the key for the connection string is added to the app.config--  
+-- *Ensure that the key for the connection string is added to the app.config* --  
 
 ## Usage
 The following users with various roles can be used to try the program  
